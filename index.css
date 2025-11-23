@@ -1,0 +1,97 @@
+* {
+    margin: 0px;
+    padding: 0px;
+}
+
+ul, ol {
+    list-style: none;
+}
+
+a {
+    text-decoration: none
+}
+
+body {
+    overflow: hidden;
+}
+
+.slider-wrapper {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.slider-container {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+    transition: transform 0.6s ease-in-out;
+}
+
+.grid-1, .grid-2, .grid-3, .grid-4, .grid-5 {
+    display: grid;
+    grid-template-columns: repeat(1fr);
+    grid-template-rows: repeat(1fr);
+    grid-template-areas:
+    '. . .'
+    'left main right'
+    '. . .';
+    width: 100vw;
+    height: 100vh;
+    flex-shrink: 0;
+}
+
+.grid-1 {
+    background: #f0f8ff;
+}
+
+.grid-2 {
+    background: #fff0f5;
+}
+
+.grid-3 {
+    background: #f0fff0;
+}
+
+.grid-4 {
+    background: #fffacd;
+}
+
+.grid-5 {
+    background: #ffe4e1;
+}
+
+.main {
+    grid-area: main;
+    text-align: center;
+    align-content: center;
+    font-size: 2rem;
+}
+
+.left, .right {
+    align-content: center;
+    font-size: 3rem;
+    pointer-events: none;
+}
+
+.left > ion-icon, .right > ion-icon {
+    cursor: pointer;
+    transition: transform 0.2s;
+    pointer-events: auto;
+}
+
+.left > ion-icon:hover, .right > ion-icon:hover {
+    transform: scale(1.2);
+}
+
+.left {
+    grid-area: left;
+    text-align: left;
+    margin-left: 10px;
+}
+
+.right {
+    grid-area: right;
+    text-align: right;
+    margin-right: 10px;
+}

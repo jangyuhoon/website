@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cycle | main</title>
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+  <div class="slider-wrapper">
+    <div class="slider-container" id="sliderContainer">
+      <!-- 5 슬라이드 복제 -->
+      <div class="grid-5">
+        <div class="main">기부</div>
+        <div class="left"><ion-icon name="chevron-back-outline" onclick="left_on()"></ion-icon></div>
+        <div class="right"><ion-icon name="chevron-forward-outline" onclick="right_on()"></ion-icon></div>
+      </div>
+      
+      <!-- 일반 슬라이드 -->
+      <div class="grid-1">
+        <div class="main">기획</div>
+        <div class="left"><ion-icon name="chevron-back-outline" onclick="left_on()"></ion-icon></div>
+        <div class="right"><ion-icon name="chevron-forward-outline" onclick="right_on()"></ion-icon></div>
+      </div>
+      <div class="grid-2">
+        <div class="main">생산</div>
+        <div class="left"><ion-icon name="chevron-back-outline" onclick="left_on()"></ion-icon></div>
+        <div class="right"><ion-icon name="chevron-forward-outline" onclick="right_on()"></ion-icon></div>
+      </div>
+      <div class="grid-3">
+        <div class="main">소비</div>
+        <div class="left"><ion-icon name="chevron-back-outline" onclick="left_on()"></ion-icon></div>
+        <div class="right"><ion-icon name="chevron-forward-outline" onclick="right_on()"></ion-icon></div>
+      </div>
+      <div class="grid-4">
+        <div class="main">리폼</div>
+        <div class="left"><ion-icon name="chevron-back-outline" onclick="left_on()"></ion-icon></div>
+        <div class="right"><ion-icon name="chevron-forward-outline" onclick="right_on()"></ion-icon></div>
+      </div>
+      <div class="grid-5">
+        <div class="main">기부</div>
+        <div class="left"><ion-icon name="chevron-back-outline" onclick="left_on()"></ion-icon></div>
+        <div class="right"><ion-icon name="chevron-forward-outline" onclick="right_on()"></ion-icon></div>
+      </div>
+      
+      <!-- 1 슬라이드 복제 -->
+      <div class="grid-1">
+        <div class="main">기획</div>
+        <div class="left"><ion-icon name="chevron-back-outline" onclick="left_on()"></ion-icon></div>
+        <div class="right"><ion-icon name="chevron-forward-outline" onclick="right_on()"></ion-icon></div>
+      </div>
+    </div>
+  </div>
+  
+  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+  <script src="index.js"></script>
+</body>
+</html>

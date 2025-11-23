@@ -1,0 +1,366 @@
+* {
+    margin: 0px;
+    padding: 0px;
+}
+
+ul, ol {
+    list-style: none;
+}
+
+a {
+    text-decoration: none;
+}
+
+body {
+    overflow: hidden;
+    padding: 10px;
+}
+
+.grid {
+    display: grid;
+    width: 100%;
+    height: 97vh;
+    grid-template-columns: 1fr 5fr 0.7fr;
+    grid-template-rows: 1fr minmax(auto, 10fr) 1fr;
+    grid-template-areas: 
+    'icon search category'
+    'info info info'
+    'recent like select';
+    gap: 10px;
+}
+
+.icon {
+    grid-area: icon;
+    border: 2px solid black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 5px;
+    text-align: center;
+    user-select: none;
+    position: relative;
+}
+
+.icon:hover {
+    background: #f0f0f0;
+}
+
+.user_dropdown {
+    display: none;
+    position: fixed;
+    background: white;
+    border: 2px solid black;
+    z-index: 1000;
+}
+
+.user_dropdown.active {
+    display: block;
+}
+
+.user_dropdown_item {
+    padding: 10px;
+    cursor: pointer;
+    transition: background 0.2s;
+    border-bottom: 1px solid #ddd;
+    font-size: 14px;
+    font-weight: normal;
+}
+
+.user_dropdown_item:last-child {
+    border-bottom: none;
+}
+
+.user_dropdown_item:hover {
+    background: #f0f0f0;
+}
+
+.search {
+    grid-area: search;
+    display: flex;
+    align-items: center;
+    border: 2px solid black;
+    padding: 10px;
+    gap: 10px;
+}
+
+.search_text {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 15px;
+}
+
+.search_icon {
+    font-size: 24px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.category {
+    grid-area: category;
+    border: 2px solid black;
+    padding: 10px;
+    position: relative;
+}
+
+.category_container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.category_text {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.category_icon {
+    font-size: 20px;
+    transition: transform 0.3s;
+}
+
+.category_dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 2px solid black;
+    border-top: none;
+    z-index: 1000;
+    margin-top: 10px;
+}
+
+.category_dropdown.active {
+    display: block;
+}
+
+.category_item {
+    padding: 10px;
+    cursor: pointer;
+    transition: background 0.2s;
+    border-bottom: 1px solid #ddd;
+}
+
+.category_item:last-child {
+    border-bottom: none;
+}
+
+.category_item:hover {
+    background: #f0f0f0;
+}
+
+.info {
+    grid-area: info;
+    border: 2px solid black;
+    padding: 10px;
+    display: grid;
+    grid-template-columns: 1fr 0.3fr;
+    grid-template-rows: auto auto minmax(auto, 1fr);
+    grid-template-areas: 
+    'title tag'
+    'subtitle .'
+    'content img';
+}
+
+.title {
+    grid-area: title;
+    font-size: 2rem;
+    field-sizing: content;
+    border: 0;
+    outline: none;
+}
+
+.subtitle {
+    grid-area: subtitle;
+    font-size: 1.5rem;
+    field-sizing: content;
+    border: 0;
+    outline: none;
+}
+
+.content {
+    grid-area: content;
+    font-size: 1rem;
+    border: 0;
+    outline: none;
+}
+
+.img_container {
+    grid-area: img;
+    text-align: center;
+    align-content: center;
+}
+
+#img_add {
+    display: none;
+}
+
+.tag_container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.tag {
+    grid-area: tag;
+    margin: 0 2px;
+    background-color: gray;
+    width: 25%;
+    height: 100%;
+    border-radius: 5px;
+    text-align: center;
+    align-content: center;
+}
+
+.recent {
+    grid-area: recent;
+    text-align: center;
+    align-content: center;
+    cursor: pointer;
+    border: 2px solid black;
+}
+
+.like {
+    grid-area: like;
+    text-align: right;
+    align-content: center;
+}
+
+.like > ion-icon {
+    font-size: 3rem;
+}
+
+.select {
+    grid-area: select;
+    text-align: center;
+    align-content: center;
+    cursor: pointer;
+    border: 2px solid black;
+}
+
+/* 로그인 모달 스타일 */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal_content {
+    background-color: white;
+    border: 2px solid black;
+    border-radius: 10px;
+    width: 400px;
+    max-width: 90%;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal_header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 2px solid #ddd;
+}
+
+.modal_header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.modal_close {
+    font-size: 2rem;
+    cursor: pointer;
+    color: #999;
+    transition: color 0.2s;
+    line-height: 1;
+}
+
+.modal_close:hover {
+    color: #333;
+}
+
+.modal_body {
+    padding: 30px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.modal_input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.3s;
+    box-sizing: border-box;
+}
+
+.modal_input:focus {
+    border-color: #666;
+}
+
+.modal_button {
+    width: 100%;
+    padding: 12px;
+    background-color: black;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-top: 10px;
+}
+
+.modal_button:hover {
+    background-color: #333;
+}
+
+.modal_footer {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 14px;
+    color: #666;
+}
+
+.modal_footer a {
+    color: black;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.modal_footer a:hover {
+    text-decoration: underline;
+}
