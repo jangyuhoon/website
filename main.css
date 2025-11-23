@@ -18,7 +18,6 @@ body {
     box-sizing: border-box;
 }
 
-/* 메인 페이지 스타일 */
 #mainPage {
     display: block;
 }
@@ -37,7 +36,6 @@ body {
 
 #mainPage .icon {
     grid-area: icon;
-    border: 2px solid black;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -50,8 +48,20 @@ body {
     position: relative;
 }
 
-#mainPage .icon:hover {
-    background: #f0f0f0;
+#mainPage .icon::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background-color: black;
+    transition: all 0.3s ease-out;
+}
+
+#mainPage .icon:hover::after {
+    left: 0;
+    width: 100%;
 }
 
 #mainPage .user_dropdown {
@@ -177,7 +187,6 @@ body {
     padding: 10px;
 }
 
-/* 정렬 옵션 스타일 추가 */
 #mainPage .filter .sort_options {
     grid-area: filter_sort;
     padding: 10px 0;
@@ -360,9 +369,6 @@ body {
     color: #666;
 }
 
-
-
-/* 게시글 카드 스타일 */
 .post-card {
     border: 2px solid #ddd;
     border-radius: 8px;
@@ -424,7 +430,6 @@ body {
     color: #999;
 }
 
-/* 로그인 모달 스타일 */
 .modal {
     display: none;
     position: fixed;

@@ -20,7 +20,7 @@ body {
 
 /* 글 작성 페이지 스타일 */
 #writePage {
-    display: block; /* write.html의 메인 콘텐츠이므로 display: block으로 설정 */
+    display: block;
 }
 
 #writePage .grid {
@@ -38,7 +38,6 @@ body {
 
 #writePage .icon {
     grid-area: icon;
-    border: 2px solid black;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -51,8 +50,20 @@ body {
     position: relative;
 }
 
-#writePage .icon:hover {
-    background: #f0f0f0;
+#writePage .icon::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 1.5px;
+    background-color: black;
+    transition: all 0.3s ease-out;
+}
+
+#writePage .icon:hover::after {
+    left: 0;
+    width: 100%;
 }
 
 #writePage .user_dropdown {
@@ -228,7 +239,6 @@ body {
     border: 2px solid black;
 }
 
-/* 게시글 카드 스타일 */
 .post-card {
     border: 2px solid #ddd;
     border-radius: 8px;
@@ -290,7 +300,6 @@ body {
     color: #999;
 }
 
-/* 로그인 모달 스타일 (공유) */
 .modal {
     display: none;
     position: fixed;

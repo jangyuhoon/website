@@ -31,7 +31,6 @@ body {
 
 .icon {
     grid-area: icon;
-    border: 2px solid black;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -44,8 +43,20 @@ body {
     position: relative;
 }
 
-.icon:hover {
-    background: #f0f0f0;
+.icon::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 1.5px;
+    background-color: black;
+    transition: all 0.3s ease-out;
+}
+
+.icon:hover::after {
+    left: 0;
+    width: 100%;
 }
 
 .user_dropdown {
@@ -245,7 +256,6 @@ body {
     border: 2px solid black;
 }
 
-/* 로그인 모달 스타일 */
 .modal {
     display: none;
     position: fixed;
