@@ -7,9 +7,7 @@
 
     <link rel="stylesheet" href="main.css">
 
-    <script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.polyfills.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.css" rel="stylesheet" type="text/css" />
+
 </head>
 <body>
     <!-- 메인 페이지 -->
@@ -80,47 +78,7 @@
         </div>
     </div>
 
-    <!-- 글 작성 페이지 -->
-    <div id="writePage">
-        <div class="grid">
-            <div class="icon" id="writeIcon" onclick="handleIconClick(event)">
-                로그인
-            </div>
-            <div class="user_dropdown" id="writeUserDropdown">
-                <div class="user_dropdown_item" onclick="openUserInfo()">회원 정보</div>
-                <div class="user_dropdown_item" onclick="openMyPosts()">나의 게시글</div>
-                <div class="user_dropdown_item" onclick="openMyLikes()">나의 좋아요</div>
-                <div class="user_dropdown_item" onclick="logout()">로그아웃</div>
-            </div>
-            <div class="search"></div>
-            <div class="category">
-                <div class="category_container" onclick="writecategory_on()">
-                    <span class="category_text">기획</span>
-                    <span class="writecategory_icon">▼</span>
-                </div>
-                <div class="writecategory_dropdown">
-                    <div class="category_item" style="background-color: lightgray;">1. 기획</div>
-                    <div class="category_item" onclick="location.href='produce.html'">2. 생산</div>
-                    <div class="category_item" onclick="location.href='consume.html'">3. 소비</div>
-                    <div class="category_item" onclick="location.href='reform.html'">4. 리폼</div>
-                    <div class="category_item" onclick="location.href='donate.html'">5. 기부</div>
-                </div>
-            </div>
-            <div class="info">
-                <input type="text" class="title" maxlength="20" placeholder="제목">
-                <input type="text" class="subtitle" maxlength="50" placeholder="설명">
-                <textarea class="content" placeholder="내용" style="resize: none;"></textarea>
-                <div class="img_container">
-                    <input type="file" accept="image/*" id="img_add">
-                    <label for="img_add" class="img">이미지 추가</label>
-                    <span id="img_log">선택된 파일 없음</span>
-                </div>
-                <input placeholder="태그 추가" class="tag">
-            </div>
-            <div class="recent" onclick="open_main()">최신 글</div>
-            <div class="save" onclick="savePost()">게시</div>
-        </div>
-    </div>
+
 
     <!-- 로그인 모달 -->
     <div id="loginModal" class="modal">

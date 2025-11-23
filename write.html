@@ -12,25 +12,88 @@
     <link href="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
-    <div class="grid">
-        <div class="icon"></div>
-        <div class="search"></div>
-        <div class="category"></div>
-        <div class="info">
-            <input type="text" class="title" maxlength="20" placeholder="제목">
-            <input type="text" class="subtitle" maxlength="50" placeholder="설명">
-            <textarea class="content" placeholder="내용" style="resize: none;"></textarea>
-            <div class="img_container">
-                <input type="file" accept="image/*" id="img_add">
-                <label for="img_add" class="img">이미지 추가</label>
-                <span id="img_log">선택된 파일 없음</span>
+    <!-- 글 작성 페이지 -->
+    <div id="writePage">
+        <div class="grid">
+            <div class="icon" id="writeIcon" onclick="handleIconClick(event)">
+                로그인
             </div>
-            <input placeholder="태그 추가" class="tag">
+            <div class="user_dropdown" id="writeUserDropdown">
+                <div class="user_dropdown_item" onclick="openUserInfo()">회원 정보</div>
+                <div class="user_dropdown_item" onclick="openMyPosts()">나의 게시글</div>
+                <div class="user_dropdown_item" onclick="openMyLikes()">나의 좋아요</div>
+                <div class="user_dropdown_item" onclick="logout()">로그아웃</div>
+            </div>
+            <div class="search"></div>
+            <div class="category">
+                <div class="category_container" onclick="writecategory_on()">
+                    <span class="category_text">기획</span>
+                    <span class="writecategory_icon">▼</span>
+                </div>
+                <div class="writecategory_dropdown">
+                    <div class="category_item" style="background-color: lightgray;">1. 기획</div>
+                    <div class="category_item" onclick="location.href='produce.html'">2. 생산</div>
+                    <div class="category_item" onclick="location.href='consume.html'">3. 소비</div>
+                    <div class="category_item" onclick="location.href='reform.html'">4. 리폼</div>
+                    <div class="category_item" onclick="location.href='donate.html'">5. 기부</div>
+                </div>
+            </div>
+            <div class="info">
+                <input type="text" class="title" maxlength="20" placeholder="제목">
+                <input type="text" class="subtitle" maxlength="50" placeholder="설명">
+                <textarea class="content" placeholder="내용" style="resize: none;"></textarea>
+                <div class="img_container">
+                    <input type="file" accept="image/*" id="img_add">
+                    <label for="img_add" class="img">이미지 추가</label>
+                    <span id="img_log">선택된 파일 없음</span>
+                </div>
+                <input placeholder="태그 추가" class="tag">
+            </div>
+            <div class="recent" onclick="open_main()">최신 글</div>
+            <div class="save" onclick="savePost()">게시</div>
         </div>
-        <div class="recent" onclick="location.href='plan.html'">최신 글</div>
-        <div class="save">게시</div>
     </div>
 
+    <!-- 로그인 모달 -->
+    <div id="loginModal" class="modal">
+        <div class="modal_content">
+            <div class="modal_header">
+                <h2>로그인</h2>
+                <span class="modal_close" onclick="closeLoginModal()">&times;</span>
+            </div>
+            <div class="modal_body">
+                <input type="text" id="loginId" class="modal_input" placeholder="아이디" maxlength="20">
+                <input type="password" id="loginPassword" class="modal_input" placeholder="비밀번호" maxlength="20">
+                <button class="modal_button" onclick="handleLogin()">로그인</button>
+                <div class="modal_footer">
+                    <span>계정이 없으신가요? <a href="#" onclick="openSignupModal()">회원가입</a></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 회원가입 모달 -->
+    <div id="signupModal" class="modal">
+        <div class="modal_content">
+            <div class="modal_header">
+                <h2>회원가입</h2>
+                <span class="modal_close" onclick="closeSignupModal()">&times;</span>
+            </div>
+            <div class="modal_body">
+                <input type="text" id="signupId" class="modal_input" placeholder="아이디 (3-20자)" maxlength="20">
+                <input type="password" id="signupPassword" class="modal_input" placeholder="비밀번호 (4-20자)" maxlength="20">
+                <input type="password" id="signupPasswordConfirm" class="modal_input" placeholder="비밀번호 확인" maxlength="20">
+                <input type="text" id="signupNickname" class="modal_input" placeholder="닉네임 (2-10자)" maxlength="10">
+                <button class="modal_button" onclick="handleSignup()">가입하기</button>
+                <div class="modal_footer">
+                    <span>이미 계정이 있으신가요? <a href="#" onclick="openLoginModal()">로그인</a></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
     <script src="write.js"></script>
 </body>
 </html>

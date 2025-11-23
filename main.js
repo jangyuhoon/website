@@ -1,4 +1,3 @@
-let tagify = null;
 let savedHashtags = JSON.parse(localStorage.getItem('savedHashtags')) || [];
 let currentPage = 1;
 const postsPerPage = 10;
@@ -10,7 +9,6 @@ let currentTagPage = 1;
 const tagsPerPage = 15;
 
 let sortOrder = 'latest';
-let writeSelectedCategory = null;
 let currentUser = null;
 let isMyPostsMode = false; // 나의 게시글 모드 여부
 
@@ -27,14 +25,13 @@ function checkLoginStatus() {
 
 function updateIconDisplay() {
     const mainIcon = document.getElementById('mainIcon');
-    const writeIcon = document.getElementById('writeIcon');
     
-    if (currentUser) {
-        mainIcon.textContent = currentUser.nickname;
-        writeIcon.textContent = currentUser.nickname;
-    } else {
-        mainIcon.textContent = '로그인';
-        writeIcon.textContent = '로그인';
+    if (mainIcon) { // Check if element exists
+        if (currentUser) {
+            mainIcon.textContent = currentUser.nickname;
+        } else {
+            mainIcon.textContent = '로그인';
+        }
     }
 }
 
@@ -50,11 +47,9 @@ function handleIconClick(event) {
 
 function toggleUserDropdown() {
     const mainDropdown = document.getElementById('mainUserDropdown');
-    const writeDropdown = document.getElementById('writeUserDropdown');
     const mainIcon = document.getElementById('mainIcon');
-    const writeIcon = document.getElementById('writeIcon');
     
-    if (document.getElementById('mainPage').style.display !== 'none') {
+    if (mainDropdown && mainIcon) { // Check if elements exist
         const isActive = mainDropdown.classList.toggle('active');
         
         if (isActive) {
@@ -63,24 +58,14 @@ function toggleUserDropdown() {
             mainDropdown.style.left = iconRect.left + 'px';
             mainDropdown.style.width = iconRect.width + 'px';
         }
-    } else {
-        const isActive = writeDropdown.classList.toggle('active');
-        
-        if (isActive) {
-            const iconRect = writeIcon.getBoundingClientRect();
-            writeDropdown.style.top = (iconRect.bottom + 10) + 'px';
-            writeDropdown.style.left = iconRect.left + 'px';
-            writeDropdown.style.width = iconRect.width + 'px';
-        }
     }
 }
 
 function closeUserDropdown() {
     const mainDropdown = document.getElementById('mainUserDropdown');
-    const writeDropdown = document.getElementById('writeUserDropdown');
-    
-    mainDropdown.classList.remove('active');
-    writeDropdown.classList.remove('active');
+    if (mainDropdown) { // Check if element exists
+        mainDropdown.classList.remove('active');
+    }
 }
 
 function openUserInfo() {
@@ -102,12 +87,6 @@ function openMyPosts() {
     
     // 나의 게시글 모드 활성화
     isMyPostsMode = true;
-    
-    // 글 작성 페이지에서 나의 게시글을 클릭한 경우 메인 페이지로 이동
-    if (document.getElementById('writePage').style.display !== 'none') {
-        open_main();
-        return;
-    }
     
     // 검색 및 필터 초기화
     searchKeyword = '';
@@ -273,14 +252,7 @@ function changeSortOrder(order) {
     loadPosts();
 }
 
-function writecategory_on() {
-    const dropdown = document.querySelector('.writecategory_dropdown');
-    const icon = document.querySelector('.writecategory_icon');
-    
-    dropdown.classList.toggle('active');
-    icon.style.transform =
-        icon.style.transform === 'rotate(180deg)' ? 'rotate(0deg)' : 'rotate(180deg)';
-}
+
 
 function category_on() {
     const dropdown = document.querySelector('.category_dropdown');
@@ -297,15 +269,10 @@ function open_write() {
         openLoginModal();
         return;
     }
-    
-    document.getElementById('mainPage').style.display = 'none';
-    document.getElementById('writePage').style.display = 'block';
-    initializeTagify();
+    window.location.href = 'write.html';
 }
 
 function open_main() {
-    document.getElementById('writePage').style.display = 'none';
-    document.getElementById('mainPage').style.display = 'block';
     currentPage = 1;
     
     // 나의 게시글 모드 해제
@@ -329,115 +296,8 @@ function open_main() {
     loadPosts();
 }
 
-function initializeTagify() {
-    if (tagify) return;
-    
-    const input = document.querySelector('input.tag');
-    tagify = new Tagify(input, {
-        whitelist: savedHashtags,
-        enforceWhitelist: false,
-        dropdown: {
-            enabled: 0,
-            maxItems: 10,
-            closeOnSelect: false
-        }
-    });
-}
-
-document.getElementById('img_add').addEventListener('change', function(e) {
-    const fileName = e.target.files[0] ? e.target.files[0].name : '선택된 파일 없음';
-    document.getElementById('img_log').textContent = fileName;
-});
-
 function getPosts() {
     return JSON.parse(localStorage.getItem('posts')) || [];
-}
-
-function readImageAsBase64(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-    });
-}
-
-async function savePost() {
-    if (!currentUser) {
-        alert('로그인이 필요한 서비스입니다.');
-        openLoginModal();
-        return;
-    }
-    
-    const title = document.querySelector('#writePage .title').value.trim();
-    const subtitle = document.querySelector('#writePage .subtitle').value.trim();
-    const content = document.querySelector('#writePage .content').value.trim();
-    const tags = tagify ? tagify.value.map(tag => tag.value) : [];
-    const imageFile = document.getElementById('img_add').files[0];
-    
-    if (!title) {
-        alert('제목을 입력해주세요.');
-        return;
-    }
-    
-    if (!content) {
-        alert('내용을 입력해주세요.');
-        return;
-    }
-    
-    let imageData = null;
-    if (imageFile) {
-        try {
-            imageData = await readImageAsBase64(imageFile);
-        } catch (error) {
-            console.error('이미지 읽기 실패:', error);
-        }
-    }
-    
-    tags.forEach(tag => {
-        if (!savedHashtags.includes(tag)) {
-            savedHashtags.push(tag);
-        }
-    });
-    
-    localStorage.setItem('savedHashtags', JSON.stringify(savedHashtags));
-    
-    if (tagify) {
-        tagify.whitelist = savedHashtags;
-    }
-    
-    const posts = getPosts();
-    const postId = posts.length > 0 ? Math.max(...posts.map(p => p.id)) + 1 : 1;
-    
-    const postData = {
-        id: postId,
-        title: title,
-        subtitle: subtitle,
-        content: content,
-        tags: tags,
-        image: imageData,
-        imageName: imageFile?.name || null,
-        author: currentUser.nickname,
-        authorId: currentUser.id,
-        createdAt: new Date().toISOString(),
-        views: 0
-    };
-    
-    posts.push(postData);
-    localStorage.setItem('posts', JSON.stringify(posts));
-    
-    console.log('게시글 저장 완료:', postData);
-    
-    alert('게시 완료!');
-    
-    document.querySelector('#writePage .title').value = '';
-    document.querySelector('#writePage .subtitle').value = '';
-    document.querySelector('#writePage .content').value = '';
-    if (tagify) tagify.removeAllTags();
-    document.getElementById('img_add').value = '';
-    document.getElementById('img_log').textContent = '선택된 파일 없음';
-    
-    open_main();
 }
 
 function search_on() {
@@ -726,9 +586,8 @@ window.addEventListener('DOMContentLoaded', function() {
     
     document.addEventListener('click', function(e) {
         const mainDropdown = document.getElementById('mainUserDropdown');
-        const writeDropdown = document.getElementById('writeUserDropdown');
         
-        if (!mainDropdown.contains(e.target) && !writeDropdown.contains(e.target)) {
+        if (mainDropdown && !mainDropdown.contains(e.target)) { // Check if element exists
             closeUserDropdown();
         }
     });
