@@ -392,3 +392,10 @@ body {
 .modal_footer a:hover {
     text-decoration: underline;
 }
+
+.like.liked .heart-fill {
+    transform: translateY(0);
+}
+.like.liked .heart-svg:hover .heart-fill {
+    transform: translateY(0);
+}

@@ -303,7 +303,9 @@ async function savePost() {
         author: currentUser.nickname,
         authorId: currentUser.id,
         createdAt: new Date().toISOString(),
-        views: 0
+        views: 0,
+        likes: 0,
+        likedBy: []
     };
     posts.push(postData);
     localStorage.setItem('posts', JSON.stringify(posts));

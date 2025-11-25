@@ -273,38 +273,50 @@ function search_on() {
 // 게시글 데이터 로드 및 표시
 function loadPost() {
     const postId = getPostIdFromURL();
-    
+    const likeDiv = document.querySelector('.like'); // Get the .like div
+
     if (!postId) {
         alert('게시글을 찾을 수 없습니다.');
         window.location.href = 'plan.html';
         return;
     }
-    
-    const post = getPostById(postId);
-    
+
+    let post = getPostById(postId); // Use 'let' because we'll modify it
+
     if (!post) {
         alert('해당 게시글이 존재하지 않습니다.');
         window.location.href = 'plan.html';
         return;
     }
-    
+
+    // Initialize likes and likedBy if missing (for older posts)
+    if (post.likes === undefined) post.likes = 0;
+    if (!post.likedBy) post.likedBy = [];
+
     // 조회수 증가
     post.views = (post.views || 0) + 1;
     updatePost(post);
-    
+
+    // Initial like state setup
+    if (currentUser && post.likedBy.includes(currentUser.id)) {
+        likeDiv.classList.add('liked');
+    } else {
+        likeDiv.classList.remove('liked');
+    }
+
     // 제목 표시
     document.querySelector('.title').textContent = post.title;
-    
+
     // 설명 표시
     document.querySelector('.subtitle').textContent = post.subtitle || '';
-    
+
     // 내용 표시
     document.querySelector('.content').textContent = post.content;
-    
+
     // 이미지 표시
     const imgContainer = document.querySelector('.img_container');
     const img = document.querySelector('.img');
-    
+
     if (post.image) {
         img.src = post.image;
         img.alt = post.title;
@@ -315,12 +327,12 @@ function loadPost() {
     } else {
         imgContainer.style.display = 'none';
     }
-    
+
     // 태그 표시
     const tagContainer = document.querySelector('.tag_container');
-    
+
     if (post.tags && post.tags.length > 0) {
-        tagContainer.innerHTML = post.tags.map(tag => 
+        tagContainer.innerHTML = post.tags.map(tag =>
             `<div class="tag">#${tag}</div>`
         ).join('');
     } else {
@@ -336,6 +348,7 @@ function updatePost(updatedPost) {
     if (index !== -1) {
         posts[index] = updatedPost;
         localStorage.setItem('posts', JSON.stringify(posts));
+        console.log('localStorage posts updated.');
     }
 }
 
@@ -358,50 +371,128 @@ window.addEventListener('DOMContentLoaded', function() {
     
     // 로그인 모달 외부 클릭 시 닫기
     const loginModal = document.getElementById('loginModal');
-    loginModal.addEventListener('click', function(e) {
-        if (e.target === loginModal) {
-            closeLoginModal();
-        }
-    });
+    if (loginModal) {
+        loginModal.addEventListener('click', function(e) {
+            if (e.target === loginModal) {
+                closeLoginModal();
+            }
+        });
+    }
     
     // 회원가입 모달 외부 클릭 시 닫기
     const signupModal = document.getElementById('signupModal');
-    signupModal.addEventListener('click', function(e) {
-        if (e.target === signupModal) {
-            closeSignupModal();
-        }
-    });
+    if (signupModal) {
+        signupModal.addEventListener('click', function(e) {
+            if (e.target === signupModal) {
+                closeSignupModal();
+            }
+        });
+    }
     
     // 문서 전체 클릭 시 드롭다운 닫기
     document.addEventListener('click', function(e) {
         const dropdown = document.getElementById('userDropdown');
-        
-        if (!dropdown.contains(e.target)) {
+        if (dropdown && !dropdown.contains(e.target)) {
             closeUserDropdown();
         }
     });
     
     // Enter 키로 로그인
-    document.getElementById('loginPassword').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            handleLogin();
-        }
-    });
+    const loginPasswordInput = document.getElementById('loginPassword');
+    if (loginPasswordInput) {
+        loginPasswordInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                handleLogin();
+            }
+        });
+    }
     
     // Enter 키로 회원가입
-    document.getElementById('signupNickname').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            handleSignup();
-        }
-    });
+    const signupNicknameInput = document.getElementById('signupNickname');
+    if (signupNicknameInput) {
+        signupNicknameInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                handleSignup();
+            }
+        });
+    }
     
     // 검색 초기화
     initializeSearch();
+
+    // 좋아요 기능 클릭 이벤트 추가 및 호버 로직 수정
+    const likeDiv = document.querySelector('.like');
+    if (likeDiv) {
+        const heartSvg = likeDiv.querySelector('.heart-svg');
+
+        // 호버 이벤트 (기존 코드 수정)
+        if (heartSvg) {
+            heartSvg.addEventListener('mouseenter', function() {
+                if (!likeDiv.classList.contains('liked')) {
+                    likeDiv.classList.add('hovering'); // 임시 클래스로 호버 상태 표시
+                }
+            });
+
+            heartSvg.addEventListener('mouseleave', function() {
+                if (!likeDiv.classList.contains('liked')) {
+                    likeDiv.classList.remove('hovering');
+                }
+            });
+        }
+        
+        // 클릭 이벤트
+        if (heartSvg) { // Ensure heartSvg exists before attaching listener
+            heartSvg.addEventListener('click', function() {
+                console.log('--- Like Click Event ---');
+                if (!currentUser) {
+                    console.log('Not logged in. Opening login modal.');
+                    alert('로그인이 필요한 서비스입니다.');
+                    openLoginModal();
+                    return;
+                }
+                console.log('Current User:', currentUser);
+
+                const postId = getPostIdFromURL();
+                console.log('Post ID:', postId);
+                if (!postId) {
+                    console.log('No Post ID found.');
+                    return;
+                }
+
+                let post = getPostById(postId);
+                console.log('Initial Post:', JSON.parse(JSON.stringify(post)));
+                if (!post) {
+                    console.log('Post not found.');
+                    return;
+                }
+
+                // Initialize likes and likedBy if missing (for older posts)
+                if (post.likes === undefined) post.likes = 0;
+                if (!post.likedBy) post.likedBy = [];
+
+                const userIndex = post.likedBy.indexOf(currentUser.id);
+                console.log('User index in likedBy:', userIndex);
+
+                if (userIndex === -1) { // Not liked, so like it
+                    post.likedBy.push(currentUser.id);
+                    post.likes++;
+                    likeDiv.classList.add('liked');
+                    console.log('Post liked. New state:', post.likedBy, post.likes);
+                } else { // Already liked, so unlike it
+                    post.likedBy.splice(userIndex, 1);
+                    post.likes--;
+                    likeDiv.classList.remove('liked');
+                    console.log('Post unliked. New state:', post.likedBy, post.likes);
+                }
+                updatePost(post);
+                console.log('Post updated and saved. Final Post:', JSON.parse(JSON.stringify(post)));
+            });
+        }
+    }
     
     // 게시글 로드
     loadPost();
 });
-
 // URL 해시 변경 시 게시글 다시 로드
 window.addEventListener('hashchange', function() {
     loadPost();
