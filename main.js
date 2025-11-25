@@ -253,9 +253,7 @@ function logout() {
 }
 
 function changeSortOrder(order) {
-    if (order === 'popular') {
-        return;
-    }
+    // 이전에는 popular일 때 return 했으나, 이제 구현하므로 제거
     
     sortOrder = order;
     
@@ -355,9 +353,21 @@ function sortPosts(posts) {
     if (sortOrder === 'latest') {
         return posts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     } else if (sortOrder === 'views') {
-        return posts.sort((a, b) => b.views - a.views);
+        return posts.sort((a, b) => {
+            const viewsDiff = (b.views ?? 0) - (a.views ?? 0);
+            if (viewsDiff === 0) {
+                return new Date(b.createdAt) - new Date(a.createdAt); // 조회수가 같으면 최신순
+            }
+            return viewsDiff;
+        });
     } else if (sortOrder === 'popular') {
-        return posts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        return posts.sort((a, b) => {
+            const likesDiff = (b.likes ?? 0) - (a.likes ?? 0);
+            if (likesDiff === 0) {
+                return new Date(b.createdAt) - new Date(a.createdAt); // 좋아요 수가 같으면 최신순
+            }
+            return likesDiff;
+        });
     }
     
     return posts;
