@@ -397,6 +397,18 @@ window.addEventListener('DOMContentLoaded', function() {
     
     // 검색 초기화
     initializeSearch();
+
+    // 좋아요 아이콘 호버 이벤트
+    const likeIcon = document.querySelector('.like ion-icon');
+    if (likeIcon) {
+        likeIcon.addEventListener('mouseenter', function() {
+            this.setAttribute('name', 'heart');
+        });
+
+        likeIcon.addEventListener('mouseleave', function() {
+            this.setAttribute('name', 'heart-outline');
+        });
+    }
     
     // 게시글 로드
     loadPost();

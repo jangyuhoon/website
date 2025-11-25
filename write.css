@@ -58,7 +58,7 @@ body {
     width: 0;
     height: 1.5px;
     background-color: black;
-    transition: all 0.3s ease-out;
+    transition: all 0.25s ease-out;
 }
 
 #writePage .icon:hover::after {
