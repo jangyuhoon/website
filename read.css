@@ -240,13 +240,30 @@ body {
 
 .like {
     grid-area: like;
-    text-align: right;
-    align-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end; /* Align heart to the right */
+    padding-right: 15px; /* Add some padding */
 }
 
-.like > ion-icon {
-    font-size: 3rem;
+.heart-outline {
+    stroke: #444;
+    stroke-width: 2;
+    fill: none;
+}
+
+.heart-fill {
+    fill: rgb(255, 0, 75);
+    transition: transform 1s cubic-bezier(0.2, 1, 0.2, 1);
+    transform: translateY(30px); /* Start with the fill hidden below */
+}
+
+.heart-svg {
     cursor: pointer;
+}
+
+.heart-svg:hover .heart-fill {
+    transform: translateY(0); /* On hover, move the fill up into view */
 }
 
 .select {
