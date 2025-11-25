@@ -1,16 +1,101 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.polyfills.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.css" rel="stylesheet" type="text/css" />
+<meta charset="utf-8" />
+<style>
+/* 타이밍 설정 */
+:root {
+    --seg-duration: 0.4s; /* 각 구간의 전개/축소 시간 */
+    --gap: 0.0s; /* 필요하면 각 구간 사이 추가 지연을 줄 수 있음 */
+}
+
+/* 기본: 닫힘(hover 해제) 시의 delay 순서 (왼쪽이 먼저 닫히도록) */
+/* 닫힘 순서: left 0s -> top 0.4s -> right 0.8s -> bottom 1.2s */
+.box {
+    --db: 1.2s; /* bottom delay (닫힐 때 마지막) */
+    --dr: 0.8s; /* right delay */
+    --dt: 0.4s; /* top delay */
+    --dl: 0s;   /* left delay (닫힐 때 가장 먼저 시작) */
+
+    position: relative;
+    width: 300px;
+    height: 200px;
+    border: 2px solid black;
+    margin: 40px;
+}
+
+/* :hover 상태일 때는 '열림' 순서로 변수 재정의
+   열림 순서: bottom 0s -> right 0.4s -> top 0.8s -> left 1.2s */
+.box:hover {
+    --db: 0s;
+    --dr: calc(var(--seg-duration) + var(--gap));         /* 0.4s */
+    --dt: calc(2 * var(--seg-duration) + var(--gap));     /* 0.8s */
+    --dl: calc(3 * var(--seg-duration) + var(--gap));     /* 1.2s */
+}
+
+/* 공통 라인 스타일 + transition: width/height이 바뀔 때 애니메이션 */
+.line {
+    position: absolute;
+    background-color: #3498db;
+    opacity: 1;
+    /* 각 라인에 대해 width/height 전환을 부드럽게 처리 */
+    transition-property: width, height;
+    transition-timing-function: linear;
+    transition-duration: var(--seg-duration);
+}
+
+/* 아래쪽 라인 (왼쪽 하단에서 오른쪽으로) */
+.line.bottom {
+    bottom: -2px;
+    left: 0;
+    height: 2px;
+    width: 0;
+    transition-delay: var(--db);
+}
+
+/* 오른쪽 라인 (아래에서 위로) */
+.line.right {
+    right: -2px;
+    bottom: 0;
+    width: 2px;
+    height: 0;
+    transition-delay: var(--dr);
+}
+
+/* 위쪽 라인 (오른쪽에서 왼쪽으로) */
+.line.top {
+    top: -2px;
+    right: 0;
+    height: 2px;
+    width: 0;
+    transition-delay: var(--dt);
+}
+
+/* 왼쪽 라인 (위에서 아래로) */
+.line.left {
+    left: -2px;
+    top: 0;
+    width: 2px;
+    height: 0;
+    transition-delay: var(--dl);
+}
+
+/* 호버 시 전개 (열림) */
+.box:hover .bottom { width: 100%; }
+.box:hover .right  { height: 100%; }
+.box:hover .top    { width: 100%; }
+.box:hover .left   { height: 100%; }
+
+</style>
 </head>
 <body>
-    <input placeholder="type tags">
 
-    <script src="test.js"></script>
+<div class="box">
+    <div class="line bottom"></div>
+    <div class="line right"></div>
+    <div class="line top"></div>
+    <div class="line left"></div>
+</div>
+
 </body>
 </html>

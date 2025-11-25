@@ -268,11 +268,19 @@ function changeSortOrder(order) {
 
 function category_on() {
     const dropdown = document.querySelector('.category_dropdown');
-    const icon = document.querySelector('.category_icon');
+    const category = document.querySelector('.category');
 
     dropdown.classList.toggle('active');
-    icon.style.transform =
-        icon.style.transform === 'rotate(180deg)' ? 'rotate(0deg)' : 'rotate(180deg)';
+
+    if (dropdown.classList.contains('active')) {
+        // 활성화 상태 → 검정 배경 + 흰 텍스트
+        category.style.backgroundColor = 'black';
+        category.style.color = 'white';
+    } else {
+        // 기본 상태 → 흰 배경 + 검정 텍스트
+        category.style.backgroundColor = 'white';
+        category.style.color = 'black';
+    }
 }
 
 function open_write() {
@@ -542,7 +550,7 @@ function loadPosts() {
                     ${post.tags.map(tag => `<span class="post-tag">#${tag}</span>`).join('')}
                 </div>
                 <div class="post-meta">
-                    ${post.author ? `작성자: ${post.author} | ` : ''}${new Date(post.createdAt).toLocaleString('ko-KR')} | 조회 ${post.views} | 좋아요 ${post.likes ?? 0}
+                    ${post.author ? `작성자: ${post.author} | ` : ''}${new Date(post.createdAt).toLocaleString('ko-KR')} | 조회 ${post.views} | 좋아요 ${post.likes}
                 </div>
             </div>
             ${post.image ? `<img src="${post.image}" alt="${post.title}" class="post-image">` : ''}
