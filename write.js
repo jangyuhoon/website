@@ -380,4 +380,38 @@ window.addEventListener('DOMContentLoaded', function() {
     
     // Initialize Tagify when the write page loads
     initializeTagify();
+
+    // 검색 초기화
+    initializeSearch();
 });
+
+// 검색 기능 - 메인 페이지로 이동 (from read.js)
+function search_on() {
+    const searchInput = document.querySelector('.search_text');
+    const keyword = searchInput.value.trim();
+    
+    console.log('검색어:', keyword);
+    
+    // 검색어를 localStorage에 저장
+    if (keyword) {
+        localStorage.setItem('searchKeyword', keyword);
+        console.log('localStorage에 저장됨:', keyword);
+    } else {
+        localStorage.removeItem('searchKeyword');
+    }
+    
+    // 메인 페이지로 이동
+    window.location.href = 'plan.html';
+}
+
+// 검색창 엔터키 이벤트 초기화 (from read.js)
+function initializeSearch() {
+    const searchInput = document.querySelector('.search_text');
+    
+    // 엔터키 이벤트 추가
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            search_on();
+        }
+    });
+}

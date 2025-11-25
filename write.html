@@ -24,7 +24,10 @@
                 <div class="user_dropdown_item" onclick="openMyLikes()">나의 좋아요</div>
                 <div class="user_dropdown_item" onclick="logout()">로그아웃</div>
             </div>
-            <div class="search"></div>
+            <div class="search">
+                <input type="text" class="search_text" placeholder="게시글 검색...">
+                <ion-icon name="search-outline" class="search_icon" onclick="search_on()"></ion-icon>
+            </div>
             <div class="category">
                 <div class="category_container" onclick="writecategory_on()">
                     <span class="category_text">기획</span>
