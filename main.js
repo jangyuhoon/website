@@ -11,6 +11,7 @@ const tagsPerPage = 15;
 let sortOrder = 'latest';
 let currentUser = null;
 let isMyPostsMode = false; // 나의 게시글 모드 여부
+let isMyLikesMode = false; // 나의 좋아요 모드 여부
 
 function checkLoginStatus() {
     const loggedInUser = localStorage.getItem('currentUser');
@@ -104,7 +105,20 @@ function openMyLikes() {
     closeUserDropdown();
     if (!currentUser) return;
     
-    alert('나의 좋아요 기능은 준비 중입니다.');
+    // 나의 좋아요 모드 활성화
+    isMyLikesMode = true;
+    isMyPostsMode = false; // 나의 게시글 모드 비활성화
+
+    // 검색 및 필터 초기화
+    searchKeyword = '';
+    document.getElementById('search_function').value = '';
+    selectedTag = null;
+    tagSearchKeyword = '';
+    document.getElementById('tagsearch_function').value = '';
+    currentPage = 1;
+    
+    loadPosts();
+    alert(`${currentUser.nickname}님이 좋아요를 누른 게시글만 표시됩니다.`);
 }
 
 function openLoginModal() {
@@ -277,6 +291,7 @@ function open_main() {
     
     // 나의 게시글 모드 해제
     isMyPostsMode = false;
+    isMyLikesMode = false; // 나의 좋아요 모드 해제
     
     const savedSearchKeyword = localStorage.getItem('searchKeyword');
     if (savedSearchKeyword) {
@@ -310,6 +325,11 @@ function filterPosts(posts) {
     // 나의 게시글 모드일 때
     if (isMyPostsMode && currentUser) {
         posts = posts.filter(post => post.authorId === currentUser.id);
+    }
+    
+    // 나의 좋아요 모드일 때
+    if (isMyLikesMode && currentUser) {
+        posts = posts.filter(post => post.likedBy && post.likedBy.includes(currentUser.id));
     }
     
     // 검색어 필터링
