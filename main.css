@@ -49,19 +49,22 @@ body {
 }
 
 #mainPage .icon::after {
-    content: '';
+    content: "";
     position: absolute;
     bottom: 0;
     left: 50%;
     width: 0;
     height: 2px;
     background-color: black;
-    transition: all 0.25s ease-out;
+    transition: all 0.25s ease-in-out;
+    transition-duration: 0.25s;
+    opacity: 0;
 }
 
 #mainPage .icon:hover::after {
-    left: 0;
+    opacity: 1;
     width: 100%;
+    left: 0;
 }
 
 #mainPage .user_dropdown {
@@ -81,8 +84,7 @@ body {
     padding: 10px;
     cursor: pointer;
     transition: all 0.25s ease;
-    font-size: 14px;
-    font-weight: normal;
+    font-size: 15px;
 }
 
 #mainPage .user_dropdown_item:first-child {
@@ -97,17 +99,18 @@ body {
 
 #mainPage .user_dropdown_item::after {
     display: block;
-    content: '';
+    content: "";
     position: absolute;
-    left: 50%;
+    left: 0;
     width: 0;
     height: 2px;
     background-color: black;
-    transition: all 0.25s ease-out;
+    transition: all 0.25s ease-in-out;
+    opacity: 0;
 }
 
 #mainPage .user_dropdown_item:hover::after {
-    left: 0;
+    opacity: 1;
     width: 100%;
 }
 
@@ -205,17 +208,18 @@ body {
 
 #mainPage .category_item::after {
     display: block;
-    content: '';
+    content: "";
     position: absolute;
-    left: 50%;
+    left: 0;
     width: 0;
     height: 2px;
     background-color: black;
     transition: all 0.25s ease-out;
+    opacity: 0;
 }
 
 #mainPage .category_item:hover::after {
-    left: 0;
+    opacity: 1;
     width: 100%;
 }
 
@@ -374,7 +378,7 @@ body {
     gap: 10px;
     padding: 20px 0;
     margin-top: 20px;
-    border-top: 2px solid #ddd;
+    border-top: 2px solid #333;
 }
 
 #mainPage .list_page button {
@@ -454,10 +458,8 @@ body {
 }
 
 .post-card .post-tag {
-    background-color: rgb(0, 0, 200);
-    color: white;
-    padding: 3px 10px;
-    border-radius: 15px;
+    border-bottom: 2px solid gray;
+    color: #333;
     font-size: 0.85rem;
 }
 
