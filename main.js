@@ -470,7 +470,7 @@ function open_write() {
         openLoginModal();
         return;
     }
-    window.location.href = 'write.html';
+    showLoadingAndNavigateToPage('write.html');
 }
 
 function open_main() {
