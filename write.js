@@ -21,17 +21,17 @@ function checkLoginStatus() {
 }
 
 function updateIconDisplay() {
-    const writeIcon = document.getElementById('writeIcon'); // Only writeIcon in write.html
-    if (writeIcon) { // Check if element exists
+    const writelogin = document.getElementById('writelogin'); // Only writeIcon in write.html
+    if (writelogin) { // Check if element exists
         if (currentUser) {
-            writeIcon.textContent = currentUser.nickname;
+            writelogin.textContent = currentUser.nickname;
         } else {
-            writeIcon.textContent = '로그인';
+            writelogin.textContent = '로그인';
         }
     }
 }
 
-function handleIconClick(event) {
+function handleloginClick(event) {
     event.stopPropagation();
     if (currentUser) {
         toggleUserDropdown();
@@ -42,11 +42,11 @@ function handleIconClick(event) {
 
 function toggleUserDropdown() {
     const writeDropdown = document.getElementById('writeUserDropdown'); // Only writeUserDropdown
-    const writeIcon = document.getElementById('writeIcon');
-    if (writeDropdown && writeIcon) { // Check if elements exist
+    const writelogin = document.getElementById('writelogin');
+    if (writeDropdown && writelogin) { // Check if elements exist
         const isActive = writeDropdown.classList.toggle('active');
         if (isActive) {
-            const iconRect = writeIcon.getBoundingClientRect();
+            const iconRect = writelogin.getBoundingClientRect();
             writeDropdown.style.top = (iconRect.bottom + 10) + 'px';
             writeDropdown.style.left = iconRect.left + 'px';
             writeDropdown.style.width = iconRect.width + 'px';
@@ -200,14 +200,20 @@ function logout() {
     alert('로그아웃 되었습니다.');
 }
 
-// Write Page Specific
-function writecategory_on() {
-    const dropdown = document.querySelector('.writecategory_dropdown');
-    const icon = document.querySelector('.writecategory_icon');
-    if (dropdown && icon) { // Check if elements exist
-        dropdown.classList.toggle('active');
-        icon.style.transform =
-            icon.style.transform === 'rotate(180deg)' ? 'rotate(0deg)' : 'rotate(180deg)';
+function category_on() {
+    const dropdown = document.querySelector('.category_dropdown');
+    const category = document.querySelector('.category');
+
+    dropdown.classList.toggle('active');
+
+    if (dropdown.classList.contains('active')) {
+        // 활성화 상태 → 검정 배경 + 흰 텍스트
+        category.style.backgroundColor = 'black';
+        category.style.color = 'white';
+    } else {
+        // 기본 상태 → 흰 배경 + 검정 텍스트
+        category.style.backgroundColor = 'white';
+        category.style.color = 'black';
     }
 }
 

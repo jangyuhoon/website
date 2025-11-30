@@ -15,7 +15,7 @@
     <!-- 글 작성 페이지 -->
     <div id="writePage">
         <div class="grid">
-            <div class="icon" id="writeIcon" onclick="handleIconClick(event)">
+            <div class="login" id="writelogin" onclick="handleloginClick(event)">
                 로그인
             </div>
             <div class="user_dropdown" id="writeUserDropdown">
@@ -28,13 +28,12 @@
                 <input type="text" class="search_text" placeholder="게시글 검색...">
                 <ion-icon name="search-outline" class="search_icon" onclick="search_on()"></ion-icon>
             </div>
-            <div class="category">
-                <div class="category_container" onclick="writecategory_on()">
+            <div class="category" onclick="category_on()">
+                <div class="category_container">
                     <span class="category_text">기획</span>
-                    <span class="writecategory_icon">▼</span>
                 </div>
-                <div class="writecategory_dropdown">
-                    <div class="category_item" onclick="location.href='plan.html'" style="background-color: lightgray;">1. 기획</div>
+                <div class="category_dropdown">
+                    <div class="category_item" onclick="location.href='plan.html'" style="background-color: black; color: white;">1. 기획</div>
                     <div class="category_item" onclick="location.href='produce.html'">2. 생산</div>
                     <div class="category_item" onclick="location.href='consume.html'">3. 소비</div>
                     <div class="category_item" onclick="location.href='reform.html'">4. 리폼</div>

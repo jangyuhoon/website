@@ -208,7 +208,7 @@ body {
     position: absolute;
     left: 0;
     width: 0;
-    height: 2px;
+    height: 1.5px;
     background-color: black;
     transition: all 0.25s ease-out;
     opacity: 0;
