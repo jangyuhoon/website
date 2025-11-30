@@ -829,9 +829,9 @@ window.addEventListener('DOMContentLoaded', function() {
     
     if (savedSearchKeyword) {
         searchKeyword = savedSearchKeyword;
-        document.getElementById('search_function').value = savedSearchKeyword;
-        localStorage.removeItem('searchKeyword');
-        console.log('검색어 적용됨:', searchKeyword);
+        if (window.top === window.self) {
+            localStorage.removeItem('searchKeyword');
+        }
     }
     
     loadTags();

@@ -25,11 +25,11 @@
                 <span class="category_text">기획</span>
             </div>
             <div class="category_dropdown">
-                <div class="category_item" onclick="location.href='plan.html'" style="background-color: black; color: white;">1. 기획</div>
-                <div class="category_item" onclick="location.href='produce.html'">2. 생산</div>
-                <div class="category_item" onclick="location.href='consume.html'">3. 소비</div>
-                <div class="category_item" onclick="location.href='reform.html'">4. 리폼</div>
-                <div class="category_item" onclick="location.href='donate.html'">5. 기부</div>
+                <div class="category_item" onclick="showLoadingAndNavigateToPage('plan.html')" style="background-color: black; color: white;">1. 기획</div>
+                <div class="category_item" onclick="showLoadingAndNavigateToPage('produce.html')">2. 생산</div>
+                <div class="category_item" onclick="showLoadingAndNavigateToPage('consume.html')">3. 소비</div>
+                <div class="category_item" onclick="showLoadingAndNavigateToPage('reform.html')">4. 리폼</div>
+                <div class="category_item" onclick="showLoadingAndNavigateToPage('donate.html')">5. 기부</div>
             </div>
         </div>
         <div class="info">
@@ -43,7 +43,7 @@
                 <div class="tag"></div>
             </div>
         </div>
-        <div class="recent" onclick="location.href='plan.html'">최신 글</div>
+        <div class="recent" onclick="showLoadingAndNavigateToPage('plan.html')">최신 글</div>
         <div class="like">
             <svg class="heart-svg" width="36" height="36" viewBox="0 0 32 29.6">
                 <defs>
