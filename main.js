@@ -473,31 +473,6 @@ function open_write() {
     showLoadingAndNavigateToPage('write.html');
 }
 
-function open_main() {
-    currentPage = 1;
-    
-    // 나의 게시글 모드 해제
-    isMyPostsMode = false;
-    isMyLikesMode = false; // 나의 좋아요 모드 해제
-    
-    const savedSearchKeyword = localStorage.getItem('searchKeyword');
-    if (savedSearchKeyword) {
-        searchKeyword = savedSearchKeyword;
-        document.getElementById('search_function').value = savedSearchKeyword;
-        localStorage.removeItem('searchKeyword');
-    } else {
-        searchKeyword = '';
-        document.getElementById('search_function').value = '';
-    }
-    
-    selectedTag = null;
-    tagSearchKeyword = '';
-    document.getElementById('tagsearch_function').value = '';
-    currentTagPage = 1;
-    loadTags();
-    loadPosts();
-}
-
 function getPosts() {
     return JSON.parse(localStorage.getItem('posts')) || [];
 }
