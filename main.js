@@ -25,18 +25,18 @@ function checkLoginStatus() {
 }
 
 function updateIconDisplay() {
-    const mainIcon = document.getElementById('mainIcon');
+    const mainlogin = document.getElementById('mainlogin');
     
-    if (mainIcon) { // Check if element exists
+    if (mainlogin) { // Check if element exists
         if (currentUser) {
-            mainIcon.textContent = currentUser.nickname;
+            mainlogin.textContent = currentUser.nickname;
         } else {
-            mainIcon.textContent = '로그인';
+            mainlogin.textContent = '로그인';
         }
     }
 }
 
-function handleIconClick(event) {
+function handleloginClick(event) {
     event.stopPropagation();
     
     if (currentUser) {
@@ -48,13 +48,13 @@ function handleIconClick(event) {
 
 function toggleUserDropdown() {
     const mainDropdown = document.getElementById('mainUserDropdown');
-    const mainIcon = document.getElementById('mainIcon');
+    const mainlogin = document.getElementById('mainlogin');
     
-    if (mainDropdown && mainIcon) { // Check if elements exist
+    if (mainDropdown && mainlogin) { // Check if elements exist
         const isActive = mainDropdown.classList.toggle('active');
         
         if (isActive) {
-            const iconRect = mainIcon.getBoundingClientRect();
+            const iconRect = mainlogin.getBoundingClientRect();
             mainDropdown.style.top = (iconRect.bottom + 10) + 'px';
             mainDropdown.style.left = iconRect.left + 'px';
             mainDropdown.style.width = iconRect.width + 'px';

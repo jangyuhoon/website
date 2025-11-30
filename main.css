@@ -18,24 +18,20 @@ body {
     box-sizing: border-box;
 }
 
-#mainPage {
-    display: block;
-}
-
-#mainPage .grid {
+.grid {
     display: grid;
     width: 100%;
     height: calc(100vh - 20px);
     grid-template-columns: 1fr 0.5fr 5fr 0.7fr;
     grid-template-rows: 1fr minmax(auto, 13fr);
     grid-template-areas: 
-    'icon write search category'
+    'login write search category'
     'filter info info info';
     gap: 10px;
 }
 
-#mainPage .icon {
-    grid-area: icon;
+.login {
+    grid-area: login;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -48,7 +44,7 @@ body {
     position: relative;
 }
 
-#mainPage .icon::after {
+.login::after {
     content: "";
     position: absolute;
     bottom: 0;
@@ -61,13 +57,13 @@ body {
     opacity: 0;
 }
 
-#mainPage .icon:hover::after {
+.login:hover::after {
     opacity: 1;
     width: 100%;
     left: 0;
 }
 
-#mainPage .user_dropdown {
+.user_dropdown {
     display: none;
     position: fixed;
     background: white;
@@ -76,45 +72,45 @@ body {
     z-index: 1000;
 }
 
-#mainPage .user_dropdown.active {
+.user_dropdown.active {
     display: block;
 }
 
-#mainPage .user_dropdown_item {
+.user_dropdown_item {
     padding: 10px;
     cursor: pointer;
     transition: all 0.25s ease;
     font-size: 15px;
 }
 
-#mainPage .user_dropdown_item:first-child {
+.user_dropdown_item:first-child {
     border-radius: 12px 12px 0 0;
     border-bottom: none;
 }
 
-#mainPage .user_dropdown_item:last-child {
+.user_dropdown_item:last-child {
     border-radius: 0 0 12px 12px;
     border-bottom: none;
 }
 
-#mainPage .user_dropdown_item::after {
+.user_dropdown_item::after {
     display: block;
     content: "";
     position: absolute;
     left: 0;
     width: 0;
-    height: 2px;
+    height: 1.5px;
     background-color: black;
     transition: all 0.25s ease-in-out;
     opacity: 0;
 }
 
-#mainPage .user_dropdown_item:hover::after {
+.user_dropdown_item:hover::after {
     opacity: 1;
     width: 100%;
 }
 
-#mainPage .write {
+.write {
     grid-area: write;
     text-align: center;
     align-content: center;
@@ -124,7 +120,7 @@ body {
     cursor: pointer;
 }
 
-#mainPage .search {
+.search {
     grid-area: search;
     display: flex;
     align-items: center;
@@ -134,14 +130,14 @@ body {
     gap: 10px;
 }
 
-#mainPage .search_text {
+.search_text {
     flex: 1;
     border: none;
     outline: none;
     font-size: 15px;
 }
 
-#mainPage .search input {
+.search input {
     width: 100%;
     border: none;
     outline: none;
@@ -150,7 +146,7 @@ body {
     background-color: #f1f1f1;
 }
 
-#mainPage .category {
+.category {
     grid-area: category;
     padding: 10px;
     position: relative;
@@ -159,20 +155,20 @@ body {
     cursor: pointer;
 }
 
-#mainPage .category_container {
+.category_container {
     display: flex;
     justify-content: center;
     align-items: center;
     user-select: none;
 }
 
-#mainPage .category_text {
+.category_text {
     font-size: 18px;
     font-weight: bold;
     padding: 0 10px;
 }
 
-#mainPage .category_dropdown {
+.category_dropdown {
     display: none;
     position: absolute;
     top: 100%;
@@ -185,28 +181,28 @@ body {
     margin-top: 10px;
 }
 
-#mainPage .category_dropdown.active {
+.category_dropdown.active {
     display: block;
 }
 
-#mainPage .category_item {
+.category_item {
     padding: 10px;
     cursor: pointer;
     transition: all 0.25s ease;
     color: black;
 }
 
-#mainPage .category_item:first-child {
+.category_item:first-child {
     border-top: none;
     border-radius: 10px 10px 0 0;
 }
 
-#mainPage .category_item:last-child {
+.category_item:last-child {
     border-bottom: none;
     border-radius: 0 0 10px 10px;
 }
 
-#mainPage .category_item::after {
+.category_item::after {
     display: block;
     content: "";
     position: absolute;
@@ -218,12 +214,12 @@ body {
     opacity: 0;
 }
 
-#mainPage .category_item:hover::after {
+.category_item:hover::after {
     opacity: 1;
     width: 100%;
 }
 
-#mainPage .filter {
+.filter {
     grid-area: filter;
     display: grid;
     grid-template-rows: auto auto 50vh auto;
@@ -235,28 +231,28 @@ body {
     padding: 10px;
 }
 
-#mainPage .filter .sort_options {
+.filter .sort_options {
     grid-area: filter_sort;
     padding: 10px 0;
     border-bottom: 2px solid #333;
     margin-bottom: 10px;
 }
 
-#mainPage .filter .sort_options .sort_title {
+.filter .sort_options .sort_title {
     font-size: 14px;
     font-weight: bold;
     margin-bottom: 8px;
     color: #333;
 }
 
-#mainPage .filter .sort_options .sort_item {
+.filter .sort_options .sort_item {
     display: flex;
     align-items: center;
     padding: 5px 0;
     cursor: pointer;
 }
 
-#mainPage .filter .sort_options .sort_item input[type="radio"] {
+.filter .sort_options .sort_item input[type="radio"] {
     margin-right: 8px;
     cursor: pointer;
     width: 16px;
@@ -264,13 +260,13 @@ body {
     accent-color: rgb(0, 0, 200);
 }
 
-#mainPage .filter .sort_options .sort_item label {
+.filter .sort_options .sort_item label {
     cursor: pointer;
     font-size: 14px;
     user-select: none;
 }
 
-#mainPage .filter .tag_search {
+.filter .tag_search {
     grid-area: filter_search;
     padding: 8px;
     border: none;
@@ -281,7 +277,7 @@ body {
     margin-bottom: 10px;
 }
 
-#mainPage .filter .tag_item {
+.filter .tag_item {
     grid-area: filter_tagitem;
     overflow: auto;
     display: flex;
@@ -292,9 +288,9 @@ body {
     overflow-x: hidden;
 }
 
-#mainPage .filter .tag-item {
+.filter .tag-item {
     padding: 8px 12px;
-    border: 2px solid rgb(0, 0, 200);
+    border: 2px solid black;
     box-shadow: 0px 0px 10px rgba(0, 0, 200, 0.2);
     color: black;
     border-radius: 5px;
@@ -307,26 +303,26 @@ body {
     transition: all 0.5s ease;
 }
 
-#mainPage .filter .tag-item:hover {
+.filter .tag-item:hover {
     box-shadow: 0px 0px 10px rgba(0, 0, 200, 1);
 }
 
-#mainPage .filter .tag-item.active {
+.filter .tag-item.active {
     background-color: rgb(0, 0, 200);
     color: white;
 }
 
-#mainPage .filter .tag-item .tag-count {
+.filter .tag-item .tag-count {
     color: black;
     padding: 2px 8px;
     font-size: 12px;
 }
 
-#mainPage .filter .tag-item.active .tag-count {
+.filter .tag-item.active .tag-count {
     color: white;
 }
 
-#mainPage .filter .tag_page {
+.filter .tag_page {
     grid-area: filter_page;
     display: flex;
     justify-content: center;
@@ -335,7 +331,7 @@ body {
     border-top: 2px solid #333;
 }
 
-#mainPage .filter .tag_page button {
+.filter .tag_page button {
     padding: 5px 10px;
     border: 2px solid #f0f0f0;
     border-radius: 5px;
@@ -345,17 +341,17 @@ body {
     color: #333;
 }
 
-#mainPage .filter .tag_page button:disabled {
+.filter .tag_page button:disabled {
     cursor: not-allowed;
     opacity: 0.5;
 }
 
-#mainPage .filter .tag_page button.active {
+.filter .tag_page button.active {
     background: #333;
     color: white;
 }
 
-#mainPage .info {
+.info {
     grid-area: info;
     display: flex;
     flex-direction: column;
@@ -363,7 +359,7 @@ body {
     padding: 20px;
 }
 
-#mainPage .list_item {
+.list_item {
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -371,7 +367,7 @@ body {
     overflow-y: auto;
 }
 
-#mainPage .list_page {
+.list_page {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -381,7 +377,7 @@ body {
     border-top: 2px solid #333;
 }
 
-#mainPage .list_page button {
+.list_page button {
     padding: 8px 12px;
     border: 2px solid #ddd;
     background: white;
@@ -391,18 +387,18 @@ body {
     transition: all 0.3s;
 }
 
-#mainPage .list_page button:disabled {
+.list_page button:disabled {
     cursor: not-allowed;
     opacity: 0.5;
 }
 
-#mainPage .list_page button.active {
+.list_page button.active {
     background: #333;
     color: white;
     border-color: #333;
 }
 
-#mainPage .list_page .page-info {
+.list_page .page-info {
     margin: 0 10px;
     font-size: 14px;
     color: #666;

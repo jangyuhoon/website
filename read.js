@@ -15,17 +15,17 @@ function checkLoginStatus() {
 
 // 아이콘 표시 업데이트
 function updateIconDisplay() {
-    const iconArea = document.getElementById('iconArea');
+    const mainlogin = document.getElementById('mainlogin');
     
     if (currentUser) {
-        iconArea.textContent = currentUser.nickname;
+        mainlogin.textContent = currentUser.nickname;
     } else {
-        iconArea.textContent = '로그인';
+        mainlogin.textContent = '로그인';
     }
 }
 
 // 아이콘 클릭 핸들러
-function handleIconClick(event) {
+function handleloginClick(event) {
     event.stopPropagation();
     
     if (currentUser) {
@@ -38,7 +38,7 @@ function handleIconClick(event) {
 // 사용자 드롭다운 토글
 function toggleUserDropdown() {
     const dropdown = document.getElementById('userDropdown');
-    const icon = document.getElementById('iconArea');
+    const icon = document.getElementById('mainlogin');
     
     const isActive = dropdown.classList.toggle('active');
     
@@ -227,11 +227,19 @@ function logout() {
 // 카테고리 드롭다운 토글
 function category_on() {
     const dropdown = document.querySelector('.category_dropdown');
-    const icon = document.querySelector('.category_icon');
-    
+    const category = document.querySelector('.category');
+
     dropdown.classList.toggle('active');
-    icon.style.transform =
-        icon.style.transform === 'rotate(180deg)' ? 'rotate(0deg)' : 'rotate(180deg)';
+
+    if (dropdown.classList.contains('active')) {
+        // 활성화 상태 → 검정 배경 + 흰 텍스트
+        category.style.backgroundColor = 'black';
+        category.style.color = 'white';
+    } else {
+        // 기본 상태 → 흰 배경 + 검정 텍스트
+        category.style.backgroundColor = 'white';
+        category.style.color = 'black';
+    }
 }
 
 // URL에서 게시글 ID 가져오기

@@ -23,14 +23,14 @@ body {
     grid-template-columns: 1fr 5fr 0.7fr;
     grid-template-rows: 1fr minmax(auto, 10fr) 1fr;
     grid-template-areas: 
-    'icon search category'
+    'login search category'
     'info info info'
     'recent like select';
     gap: 10px;
 }
 
-.icon {
-    grid-area: icon;
+.login {
+    grid-area: login;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -43,8 +43,8 @@ body {
     position: relative;
 }
 
-.icon::after {
-    content: '';
+.login::after {
+    content: "";
     position: absolute;
     bottom: 0;
     left: 50%;
@@ -52,11 +52,13 @@ body {
     height: 1.5px;
     background-color: black;
     transition: all 0.25s ease-out;
+    opacity: 0;
 }
 
-.icon:hover::after {
+.login:hover::after {
     left: 0;
     width: 100%;
+    opacity: 1;
 }
 
 .user_dropdown {
@@ -64,6 +66,7 @@ body {
     position: fixed;
     background: white;
     border: 2px solid black;
+    border-radius: 15px;
     z-index: 1000;
 }
 
@@ -74,25 +77,43 @@ body {
 .user_dropdown_item {
     padding: 10px;
     cursor: pointer;
-    transition: background 0.2s;
-    border-bottom: 1px solid #ddd;
-    font-size: 14px;
-    font-weight: normal;
+    transition: all 0.25s ease;
+    font-size: 15px;
 }
 
-.user_dropdown_item:last-child {
+.user_dropdown_item:first-child {
+    border-radius: 12px 12px 0 0;
     border-bottom: none;
 }
 
-.user_dropdown_item:hover {
-    background: #f0f0f0;
+.user_dropdown_item:last-child {
+    border-radius: 0 0 12px 12px;
+    border-bottom: none;
+}
+
+.user_dropdown_item::after {
+    display: block;
+    content: "";
+    position: absolute;
+    left: 0;
+    width: 0;
+    height: 1.5px;
+    background-color: black;
+    transition: all 0.25s ease-in-out;
+    opacity: 0;
+}
+
+.user_dropdown_item:hover::after {
+    opacity: 1;
+    width: 100%;
 }
 
 .search {
     grid-area: search;
     display: flex;
     align-items: center;
-    border: 2px solid black;
+    background-color: #f1f1f1;
+    border-radius: 25px;
     padding: 10px;
     gap: 10px;
 }
@@ -110,29 +131,35 @@ body {
     flex-shrink: 0;
 }
 
+.search input {
+    width: 100%;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    padding: 5px;
+    background-color: #f1f1f1;
+}
+
 .category {
     grid-area: category;
-    border: 2px solid black;
     padding: 10px;
     position: relative;
+    border-radius: 25px;
+    border: 2px solid black;
+    cursor: pointer;
 }
 
 .category_container {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
-    cursor: pointer;
     user-select: none;
 }
 
 .category_text {
-    font-size: 16px;
+    font-size: 18px;
     font-weight: bold;
-}
-
-.category_icon {
-    font-size: 20px;
-    transition: transform 0.3s;
+    padding: 0 10px;
 }
 
 .category_dropdown {
@@ -143,7 +170,7 @@ body {
     right: 0;
     background: white;
     border: 2px solid black;
-    border-top: none;
+    border-radius: 15px;
     z-index: 1000;
     margin-top: 10px;
 }
@@ -155,21 +182,41 @@ body {
 .category_item {
     padding: 10px;
     cursor: pointer;
-    transition: background 0.2s;
-    border-bottom: 1px solid #ddd;
+    transition: all 0.25s ease;
+    color: black;
+}
+
+.category_item:first-child {
+    border-top: none;
+    border-radius: 10px 10px 0 0;
 }
 
 .category_item:last-child {
     border-bottom: none;
+    border-radius: 0 0 10px 10px;
 }
 
-.category_item:hover {
-    background: #f0f0f0;
+.category_item::after {
+    display: block;
+    content: "";
+    position: absolute;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: black;
+    transition: all 0.25s ease-out;
+    opacity: 0;
+}
+
+.category_item:hover::after {
+    opacity: 1;
+    width: 100%;
 }
 
 .info {
     grid-area: info;
-    border: 2px solid black;
+    border-top: 2px solid #333;
+    border-bottom: 2px solid #333;
     padding: 10px;
     display: grid;
     grid-template-columns: 1fr 0.3fr;
@@ -221,14 +268,15 @@ body {
 
 .tag {
     grid-area: tag;
-    margin: 0 2px;
-    background-color: gray;
     width: 25%;
     height: 100%;
-    border-radius: 5px;
+    border-bottom: 2px solid gray;
     text-align: center;
     align-content: center;
+    color: #333;
 }
+
+/* 여기까지 */
 
 .recent {
     grid-area: recent;
