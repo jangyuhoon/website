@@ -12,6 +12,7 @@ let sortOrder = 'latest';
 let currentUser = null;
 let isMyPostsMode = false; // 나의 게시글 모드 여부
 let isMyLikesMode = false; // 나의 좋아요 모드 여부
+let isNavigating = false; // 페이지 전환 중인지 여부
 
 function checkLoginStatus() {
     const loggedInUser = localStorage.getItem('currentUser');
@@ -250,6 +251,186 @@ function logout() {
     currentUser = null;
     updateIconDisplay();
     alert('로그아웃 되었습니다.');
+}
+
+// 로딩 페이지 표시 및 페이지 전환 (index.js에서 가져와 수정)
+function showLoadingAndNavigateToPage(targetPage) {
+    if (isNavigating) return;
+    isNavigating = true;
+    
+    // 로딩 오버레이 생성
+    const loadingOverlay = document.createElement('div');
+    loadingOverlay.id = 'loading-overlay';
+    loadingOverlay.innerHTML = `
+        <div class="loading-content">
+            <div class="spinner">
+                <svg viewBox="0 0 100 100">
+                    <path d="M50,15 L60,25 L50,35 L40,25 Z" class="arrow arrow1"/>
+                    <path d="M73,27 L78,40 L65,45 L60,32 Z" class="arrow arrow2"/>
+                    <path d="M77,55 L72,68 L59,63 L64,50 Z" class="arrow arrow3"/>
+                    <path d="M65,78 L50,83 L45,70 L60,65 Z" class="arrow arrow4"/>
+                    <path d="M35,78 L30,65 L43,60 L48,73 Z" class="arrow arrow5"/>
+                </svg>
+            </div>
+            <div class="loading-text">페이지 이동 중<span class="dots">.</span></div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(loadingOverlay);
+    
+    // CSS 스타일 추가
+    const style = document.createElement('style');
+    style.textContent = `
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: white;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards;
+        }
+        
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+        
+        .loading-content {
+            text-align: center;
+        }
+        
+        .spinner {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+        }
+        
+        .spinner svg {
+            width: 100%;
+            height: 100%;
+            animation: rotate 2s linear infinite;
+        }
+        
+        @keyframes rotate {
+            100% { transform: rotate(360deg); }
+        }
+        
+        .arrow {
+            fill: #333;
+            opacity: 0.8;
+        }
+        
+        .arrow1 { animation: fadeArrow 1.5s ease-in-out 0s infinite; }
+        .arrow2 { animation: fadeArrow 1.5s ease-in-out 0.3s infinite; }
+        .arrow3 { animation: fadeArrow 1.5s ease-in-out 0.6s infinite; }
+        .arrow4 { animation: fadeArrow 1.5s ease-in-out 0.9s infinite; }
+        .arrow5 { animation: fadeArrow 1.5s ease-in-out 1.2s infinite; }
+        
+        @keyframes fadeArrow {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+        
+        .loading-text {
+            font-size: 1.2rem;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        .dots {
+            display: inline-block;
+            width: 20px;
+            text-align: left;
+            animation: dotAnimation 1.5s infinite;
+        }
+        
+        @keyframes dotAnimation {
+            0% { content: '.'; }
+            33% { content: '..'; }
+            66% { content: '...'; }
+            100% { content: '.'; }
+        }
+        
+        .dots::after {
+            content: '.';
+            animation: dotContent 1.5s infinite;
+        }
+        
+        @keyframes dotContent {
+            0% { content: '.'; }
+            33% { content: '..'; }
+            66% { content: '...'; }
+            100% { content: '.'; }
+        }
+        
+        .progress-bar-container {
+            width: 300px;
+            height: 30px;
+            background: #f0f0f0;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 2px solid #ddd;
+            margin: 0 auto;
+        }
+        
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: #333;
+            border-radius: 15px;
+            transition: width 0.3s ease;
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // iframe으로 다음 페이지 미리 로딩
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.src = targetPage;
+    document.body.appendChild(iframe);
+    
+    const progressBar = document.getElementById('progress-bar');
+    let progress = 0;
+    
+    // 로딩 진행률 시뮬레이션
+    const loadingInterval = setInterval(() => {
+        progress += Math.random() * 15;
+        if (progress > 100) progress = 100;
+        progressBar.style.width = progress + '%';
+        
+        if (progress >= 100) {
+            clearInterval(loadingInterval);
+            setTimeout(() => {
+                window.location.href = targetPage;
+            }, 500);
+        }
+    }, 200);
+    
+    // iframe 로드 완료 시 진행률 100%로
+    iframe.onload = () => {
+        progress = 100;
+        progressBar.style.width = '100%';
+    };
+    
+    // 타임아웃 설정 (최대 5초)
+    setTimeout(() => {
+        if (progress < 100) {
+            progress = 100;
+            progressBar.style.width = '100%';
+            clearInterval(loadingInterval);
+            setTimeout(() => {
+                window.location.href = targetPage;
+            }, 500);
+        }
+    }, 5000);
 }
 
 function changeSortOrder(order) {
@@ -602,7 +783,8 @@ function changePage(page) {
 }
 
 function viewPost(postId, linkPage = 'read.html') {
-    window.location.href = `${linkPage}#${postId}`;
+    const targetUrl = `${linkPage}#${postId}`;
+    showLoadingAndNavigateToPage(targetUrl);
 }
 
 window.addEventListener('DOMContentLoaded', function() {
