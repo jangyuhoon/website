@@ -693,7 +693,7 @@ function loadPosts() {
     
     listitem.innerHTML = currentPosts.map(post => {
         const linkPage = (isMyPostsMode && currentUser && post.authorId === currentUser.id) 
-            ? 'edit.html' 
+            ? 'plan-edit.html' 
             : 'plan-read.html';
         
         return `
