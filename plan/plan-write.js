@@ -77,9 +77,8 @@ function openUserInfo() {
 function openMyPosts() {
     closeUserDropdown();
     if (!currentUser) return;
-    // Set flag for the target page and redirect
-    localStorage.setItem('isMyPostsMode', 'true'); // Flag for the category page
-    showLoadingAndNavigateToPage('plan.html');
+    localStorage.setItem('isMyPostsMode', 'true');
+    window.location.href = 'plan.html';
 }
 
 function openMyLikes() {
@@ -382,10 +381,6 @@ function showLoadingAndNavigateToPage(targetPage) {
     }, 5000);
 }
 
-function goToCategoryHome() {
-    showLoadingAndNavigateToPage('plan.html');
-}
-
 function category_on() {
     const dropdown = document.querySelector('.category_dropdown');
     const category = document.querySelector('.category');
@@ -417,7 +412,7 @@ function initializeTagify() {
             }
         });
     }
-};
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     const imgAddInput = document.getElementById('img_add');
@@ -447,12 +442,12 @@ async function savePost() {
         openLoginModal();
         return;
     }
-    const title = document.querySelector('#writePage .title')?.value.trim();
-    const subtitle = document.querySelector('#writePage .subtitle')?.value.trim();
-    const content = document.querySelector('#writePage .content')?.value.trim();
+    const title = document.querySelector('#writePage .title')?.value.trim(); // Optional chaining
+    const subtitle = document.querySelector('#writePage .subtitle')?.value.trim(); // Optional chaining
+    const content = document.querySelector('#writePage .content')?.value.trim(); // Optional chaining
     const tags = tagify ? tagify.value.map(tag => tag.value) : [];
-    const imageFile = document.getElementById('img_add')?.files[0];
-
+    const imageFile = document.getElementById('img_add')?.files[0]; // Optional chaining
+    
     if (!title) {
         alert('제목을 입력해주세요.');
         return;
@@ -461,18 +456,14 @@ async function savePost() {
         alert('내용을 입력해주세요.');
         return;
     }
-
     let imageData = null;
     if (imageFile) {
         try {
             imageData = await readImageAsBase64(imageFile);
         } catch (error) {
             console.error('이미지 읽기 실패:', error);
-            alert('이미지를 처리하는 중 오류가 발생했습니다.');
-            return;
         }
     }
-
     tags.forEach(tag => {
         if (!savedHashtags.includes(tag)) {
             savedHashtags.push(tag);
@@ -482,10 +473,8 @@ async function savePost() {
     if (tagify) {
         tagify.whitelist = savedHashtags;
     }
-
     const posts = getPosts();
     const postId = posts.length > 0 ? Math.max(...posts.map(p => p.id)) + 1 : 1;
-    
     const postData = {
         id: postId,
         title: title,
@@ -499,15 +488,13 @@ async function savePost() {
         createdAt: new Date().toISOString(),
         views: 0,
         likes: 0,
-        likedBy: [],
-        category: 'plan' // Hardcoded category
+        likedBy: []
     };
-
     posts.push(postData);
     localStorage.setItem('posts', JSON.stringify(posts));
     console.log('게시글 저장 완료:', postData);
     alert('게시 완료!');
-
+    
     // Clear form fields
     const writePageTitle = document.querySelector('#writePage .title');
     const writePageSubtitle = document.querySelector('#writePage .subtitle');
@@ -522,8 +509,7 @@ async function savePost() {
     if (imgAddElement) imgAddElement.value = '';
     if (imgLogElement) imgLogElement.textContent = '선택된 파일 없음';
     
-    // Redirect to the correct category page after saving
-    showLoadingAndNavigateToPage('plan.html');
+    window.location.href = 'plan.html';
 }
 
 
@@ -596,7 +582,7 @@ function search_on() {
         localStorage.removeItem('searchKeyword');
     }
     
-    // 현재 카테고리 페이지로 이동
+    // 메인 페이지로 이동
     showLoadingAndNavigateToPage('plan.html');
 }
 

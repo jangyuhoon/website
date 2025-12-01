@@ -15,7 +15,7 @@ let isScrollTriggered = false;
 
 // 각 화면별 이동할 페이지 매핑
 const pageMapping = {
-    1: 'plan.html',
+    1: 'plan/plan.html',
     2: 'produce.html',
     3: 'consume.html',
     4: 'reform.html',
