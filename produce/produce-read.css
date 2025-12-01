@@ -460,3 +460,97 @@ body {
 .like.liked .heart-svg:hover .heart-fill {
     transform: translateY(0);
 }
+
+/* New styles for select button state */
+.select.selected {
+    background-color: gray;
+    cursor: default;
+}
+
+/* New styles for notification modal */
+#notificationList {
+    max-height: 400px; /* 스크롤 가능한 최대 높이 */
+    overflow-y: auto; /* 내용이 넘칠 경우 스크롤바 표시 */
+    padding-right: 10px; /* 스크롤바 공간 확보 */
+}
+
+.notification-item {
+    background-color: #f9f9f9;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.notification-item.unread {
+    background-color: #e6f7ff; /* 읽지 않은 알림 배경색 */
+    border-color: #91d5ff; /* 읽지 않은 알림 테두리 색 */
+    font-weight: bold;
+}
+
+.notification-item p {
+    margin: 0;
+    color: #333;
+    line-height: 1.4;
+}
+
+.notification-item a {
+    color: #1890ff;
+    text-decoration: none;
+    font-size: 0.9em;
+}
+
+.notification-item a:hover {
+    text-decoration: underline;
+}
+
+.notification-time {
+    font-size: 0.8em;
+    color: #999;
+    align-self: flex-end;
+}
+
+.notification-delete {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    color: #ff4d4f;
+    font-size: 0.9em;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.notification-delete:hover {
+    opacity: 1;
+}
+
+.notification-empty {
+    text-align: center;
+    color: #999;
+    padding: 20px;
+}
+
+/* Notification count badge in user dropdown */
+.notification-count {
+    background-color: red;
+    color: white;
+    font-size: 0.7em;
+    border-radius: 50%;
+    padding: 2px 6px;
+    position: absolute;
+    top: -5px; /* Adjust as needed */
+    right: -5px; /* Adjust as needed */
+    display: none; /* Hidden by default, shown when unreadCount > 0 */
+    align-items: center;
+    justify-content: center;
+    min-width: 20px; /* Ensure it's circular for single digits */
+    height: 20px;
+}

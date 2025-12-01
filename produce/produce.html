@@ -14,6 +14,7 @@
             <div class="user_dropdown_item" onclick="openUserInfo()">회원 정보</div>
             <div class="user_dropdown_item" onclick="openMyPosts()">나의 게시글</div>
             <div class="user_dropdown_item" onclick="openMyLikes()">나의 좋아요</div>
+            <div class="user_dropdown_item" onclick="openMyNotifications()">나의 알림 <span id="notificationCount" class="notification-count"></span></div>
             <div class="user_dropdown_item" onclick="logout()">로그아웃</div>
         </div>
         <div class="write" onclick="open_write()">
@@ -106,6 +107,20 @@
                 <div class="modal_footer">
                     <span>이미 계정이 있으신가요? <a href="#" onclick="openLoginModal()">로그인</a></span>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 알림 모달 -->
+    <div id="notificationModal" class="modal">
+        <div class="modal_content">
+            <div class="modal_header">
+                <h2>나의 알림 기능</h2>
+                <span class="modal_close" onclick="closeNotificationModal()">&times;</span>
+            </div>
+            <div class="modal_body" id="notificationList">
+                <!-- 알림 목록이 여기에 동적으로 추가됩니다 -->
+                <p class="notification-empty">새로운 알림이 없습니다.</p>
             </div>
         </div>
     </div>

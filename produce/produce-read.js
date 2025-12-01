@@ -97,6 +97,247 @@ function openMyLikes() {
     window.location.href = 'produce.html';
 }
 
+// =========================================================
+// 나의 알림 기능 (새로운 기능)
+// =========================================================
+
+// 알림 모달 열기
+function openMyNotifications() {
+    closeUserDropdown(); // 사용자 드롭다운 닫기
+    const modal = document.getElementById('notificationModal');
+    if (modal) {
+        modal.classList.add('active');
+        loadNotifications(); // 알림 불러오기
+    }
+}
+
+// 알림 모달 닫기
+function closeNotificationModal() {
+    const modal = document.getElementById('notificationModal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+// 알림 저장 (게시글 작성자에게)
+function generateNotification(selectorId, selectedPostId) {
+    const posts = getPosts();
+    const selectedPost = posts.find(post => post.id === selectedPostId);
+
+    if (!selectedPost || !selectedPost.authorId) {
+        console.error('게시글 또는 작성자 정보를 찾을 수 없습니다.');
+        return;
+    }
+
+    // 선택한 사용자 정보
+    const users = JSON.parse(localStorage.getItem('users')) || [];
+    const selectorUser = users.find(user => user.id === selectorId);
+    const selectorNickname = selectorUser ? selectorUser.nickname : '알 수 없는 사용자';
+
+    const recipientUserId = selectedPost.authorId;
+    const notificationId = Date.now(); // 고유 알림 ID
+
+    const notification = {
+        id: notificationId,
+        selectorId: selectorId,
+        selectorNickname: selectorNickname,
+        postId: selectedPostId,
+        postTitle: selectedPost.title,
+        postLink: `produce-read.html#${selectedPostId}`, // 현재 페이지의 게시글 링크
+        message: `${selectorNickname}님이 회원님의 게시글 "${selectedPost.title}"을(를) 선택하였습니다.`,
+        timestamp: new Date().toISOString(),
+        read: false
+    };
+
+    const userNotifications = JSON.parse(localStorage.getItem('userNotifications')) || {};
+    if (!userNotifications[recipientUserId]) {
+        userNotifications[recipientUserId] = [];
+    }
+    userNotifications[recipientUserId].unshift(notification); // 최신 알림을 앞에 추가
+
+    localStorage.setItem('userNotifications', JSON.stringify(userNotifications));
+    console.log('알림이 생성되어 저장되었습니다:', notification);
+}
+
+// 현재 사용자의 알림을 불러와 모달에 표시
+function loadNotifications() {
+    const notificationList = document.getElementById('notificationList');
+    if (!notificationList) return;
+
+    notificationList.innerHTML = ''; // 기존 알림 비우기
+
+    if (!currentUser) {
+        notificationList.innerHTML = '<p class="notification-empty">로그인 후 알림을 확인해주세요.</p>';
+        return;
+    }
+
+    const userNotifications = JSON.parse(localStorage.getItem('userNotifications')) || {};
+    const notifications = userNotifications[currentUser.id] || [];
+
+    if (notifications.length === 0) {
+        notificationList.innerHTML = '<p class="notification-empty">새로운 알림이 없습니다.</p>';
+        return;
+    }
+
+    notifications.forEach(notif => {
+        const notificationItem = document.createElement('div');
+        notificationItem.classList.add('notification-item');
+        if (!notif.read) {
+            notificationItem.classList.add('unread');
+        }
+
+        notificationItem.innerHTML = `
+            <p>${notif.message}</p>
+            <a href="${notif.postLink}" onclick="markNotificationAsRead(${notif.id}); closeNotificationModal();">게시글 보기</a>
+            <span class="notification-time">${new Date(notif.timestamp).toLocaleString('ko-KR')}</span>
+            <button class="notification-delete" onclick="deleteNotification(${notif.id})">삭제</button>
+        `;
+        notificationList.appendChild(notificationItem);
+    });
+
+    // 알림 개수 업데이트 (옵션)
+    updateNotificationCount();
+}
+
+// 알림 읽음 처리
+function markNotificationAsRead(notificationId) {
+    if (!currentUser) return;
+
+    const userNotifications = JSON.parse(localStorage.getItem('userNotifications')) || {};
+    const notifications = userNotifications[currentUser.id] || [];
+
+    const notifIndex = notifications.findIndex(notif => notif.id === notificationId);
+    if (notifIndex !== -1) {
+        notifications[notifIndex].read = true;
+        userNotifications[currentUser.id] = notifications;
+        localStorage.setItem('userNotifications', JSON.stringify(userNotifications));
+        updateNotificationCount();
+        loadNotifications(); // UI 업데이트
+    }
+}
+
+// 알림 삭제
+function deleteNotification(notificationId) {
+    if (!currentUser) return;
+
+    if (confirm('정말 이 알림을 삭제하시겠습니까?')) {
+        const userNotifications = JSON.parse(localStorage.getItem('userNotifications')) || {};
+        let notifications = userNotifications[currentUser.id] || [];
+    
+        notifications = notifications.filter(notif => notif.id !== notificationId);
+        userNotifications[currentUser.id] = notifications;
+        localStorage.setItem('userNotifications', JSON.stringify(userNotifications));
+        updateNotificationCount();
+        loadNotifications(); // UI 업데이트
+    }
+}
+
+// 읽지 않은 알림 개수 업데이트 (UI에 표시할 경우)
+function updateNotificationCount() {
+    if (!currentUser) {
+        // UI에 알림 개수 표시하는 요소가 있다면 초기화
+        return;
+    }
+    const userNotifications = JSON.parse(localStorage.getItem('userNotifications')) || {};
+    const notifications = userNotifications[currentUser.id] || [];
+    const unreadCount = notifications.filter(notif => !notif.read).length;
+
+    const notificationCountElement = document.getElementById('notificationCount');
+    if (notificationCountElement) {
+        notificationCountElement.textContent = unreadCount > 0 ? unreadCount : '';
+        notificationCountElement.style.display = unreadCount > 0 ? 'flex' : 'none';
+    }
+}
+
+
+// 게시글 선택 처리 (선택 버튼 클릭 시)
+function handlePostSelection() {
+    if (!currentUser) {
+        alert('로그인이 필요한 서비스입니다.');
+        openLoginModal();
+        return;
+    }
+
+    const postId = getPostIdFromURL();
+    if (!postId) {
+        alert('게시글 정보를 찾을 수 없습니다.');
+        return;
+    }
+
+    const post = getPostById(postId);
+    if (!post) {
+        alert('해당 게시글을 찾을 수 없습니다.');
+        return;
+    }
+
+    // 작성자는 자신의 게시글을 선택할 수 없음
+    if (currentUser.id === post.authorId) {
+        alert('자신의 게시글은 선택할 수 없습니다.');
+        return;
+    }
+
+    // 이미 선택했는지 확인 (localStorage의 userSelections에 저장)
+    const userSelections = JSON.parse(localStorage.getItem('userSelections')) || {};
+    const currentUserSelections = userSelections[currentUser.id] || {};
+
+    if (currentUserSelections[postId]) {
+        alert('이미 이 게시글을 선택하셨습니다.');
+        return;
+    }
+
+    if (confirm('정말 해당 게시글을 선택하시겠습니까?')) {
+        // 선택 저장
+        if (!userSelections[currentUser.id]) {
+            userSelections[currentUser.id] = {};
+        }
+        userSelections[currentUser.id][postId] = true;
+        localStorage.setItem('userSelections', JSON.stringify(userSelections));
+
+        // 알림 생성
+        generateNotification(currentUser.id, postId);
+
+        alert('게시글 선택이 완료되었습니다.');
+        updateSelectButtonState(postId); // 버튼 상태 업데이트
+    }
+}
+
+// 선택 버튼 상태 업데이트
+function updateSelectButtonState(postId) {
+    const selectButton = document.querySelector('.select');
+    if (!selectButton) return;
+
+    if (!currentUser) {
+        selectButton.classList.remove('selected');
+        selectButton.textContent = '선택';
+        selectButton.onclick = handlePostSelection; // 로그인 필요 시 클릭 가능하도록
+        return;
+    }
+
+    const userSelections = JSON.parse(localStorage.getItem('userSelections')) || {};
+    const currentUserSelections = userSelections[currentUser.id] || {};
+    
+    const post = getPostById(postId);
+    if (post && currentUser.id === post.authorId) {
+        selectButton.classList.add('selected');
+        selectButton.textContent = '내 게시글';
+        selectButton.onclick = null; // 자신의 게시글은 선택 불가
+        selectButton.style.cursor = 'default';
+        return;
+    }
+
+    if (currentUserSelections[postId]) {
+        selectButton.classList.add('selected');
+        selectButton.textContent = '선택 완료';
+        selectButton.onclick = null; // 한 번 선택하면 다시 선택 불가
+        selectButton.style.cursor = 'default';
+    } else {
+        selectButton.classList.remove('selected');
+        selectButton.textContent = '선택';
+        selectButton.onclick = handlePostSelection;
+        selectButton.style.cursor = 'pointer';
+    }
+}
+
 // 로그인 모달 열기
 function openLoginModal() {
     closeSignupModal();
@@ -588,10 +829,23 @@ window.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // 알림 모달 외부 클릭 시 닫기
+    const notificationModal = document.getElementById('notificationModal');
+    if (notificationModal) {
+        notificationModal.addEventListener('click', function(e) {
+            if (e.target === notificationModal) {
+                closeNotificationModal();
+            }
+        });
+    }
+    
     // 문서 전체 클릭 시 드롭다운 닫기
     document.addEventListener('click', function(e) {
         const dropdown = document.getElementById('userDropdown');
-        if (dropdown && !dropdown.contains(e.target)) {
+        const loginIcon = document.getElementById('mainlogin'); // login icon
+        
+        // 드롭다운 외부, 로그인 아이콘 외부 클릭 시 닫기
+        if (dropdown && !dropdown.contains(e.target) && loginIcon && !loginIcon.contains(e.target)) {
             closeUserDropdown();
         }
     });
@@ -691,8 +945,19 @@ window.addEventListener('DOMContentLoaded', function() {
     
     // 게시글 로드
     loadPost();
+
+    // 페이지 로드 후 선택 버튼 상태 업데이트
+    const postId = getPostIdFromURL();
+    if (postId) {
+        updateSelectButtonState(postId);
+    }
+    updateNotificationCount(); // 알림 개수 초기화
 });
 // URL 해시 변경 시 게시글 다시 로드
 window.addEventListener('hashchange', function() {
     loadPost();
+    const postId = getPostIdFromURL();
+    if (postId) {
+        updateSelectButtonState(postId); // 해시 변경 시 버튼 상태 업데이트
+    }
 });

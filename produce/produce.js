@@ -107,14 +107,175 @@ function openMyLikes() {
     
     // 나의 좋아요 모드 활성화 상태를 localStorage에 저장
     localStorage.setItem('produceIsMyLikesMode', 'true');
+    isMyLikesMode = true; // 현재 페이지에서 바로 적용
     localStorage.removeItem('produceIsMyPostsMode'); // 다른 모드 비활성화
+    isMyPostsMode = false;
 
     // 검색 및 필터 초기화
-    localStorage.setItem('produceSearchKeyword', '');
+    searchKeyword = '';
     document.getElementById('search_function').value = '';
+    selectedTag = null;
+    tagSearchKeyword = '';
+    document.getElementById('tagsearch_function').value = '';
+    currentPage = 1;
+    
+    loadPosts();
+}
 
-    // 페이지 새로고침 (DOMContentLoaded에서 상태를 읽어와 적용)
-    showLoadingAndNavigateToPage('produce.html');
+// =========================================================
+// 나의 알림 기능 (새로운 기능)
+// =========================================================
+
+// 알림 모달 열기
+function openMyNotifications() {
+    closeUserDropdown(); // 사용자 드롭다운 닫기
+    const modal = document.getElementById('notificationModal');
+    if (modal) {
+        modal.classList.add('active');
+        loadNotifications(); // 알림 불러오기
+    }
+}
+
+// 알림 모달 닫기
+function closeNotificationModal() {
+    const modal = document.getElementById('notificationModal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+// 알림 저장 (게시글 작성자에게)
+function generateNotification(selectorId, selectedPostId) {
+    const posts = getPosts();
+    const selectedPost = posts.find(post => post.id === selectedPostId);
+
+    if (!selectedPost || !selectedPost.authorId) {
+        console.error('게시글 또는 작성자 정보를 찾을 수 없습니다.');
+        return;
+    }
+
+    // 선택한 사용자 정보
+    const users = JSON.parse(localStorage.getItem('users')) || [];
+    const selectorUser = users.find(user => user.id === selectorId);
+    const selectorNickname = selectorUser ? selectorUser.nickname : '알 수 없는 사용자';
+
+    const recipientUserId = selectedPost.authorId;
+    const notificationId = Date.now(); // 고유 알림 ID
+
+    const notification = {
+        id: notificationId,
+        selectorId: selectorId,
+        selectorNickname: selectorNickname,
+        postId: selectedPostId,
+        postTitle: selectedPost.title,
+        postLink: `produce-read.html#${selectedPostId}`, // 현재 페이지의 게시글 링크
+        message: `${selectorNickname}님이 회원님의 게시글 "${selectedPost.title}"을(를) 선택하였습니다.`,
+        timestamp: new Date().toISOString(),
+        read: false
+    };
+
+    const userNotifications = JSON.parse(localStorage.getItem('userNotifications')) || {};
+    if (!userNotifications[recipientUserId]) {
+        userNotifications[recipientUserId] = [];
+    }
+    userNotifications[recipientUserId].unshift(notification); // 최신 알림을 앞에 추가
+
+    localStorage.setItem('userNotifications', JSON.stringify(userNotifications));
+    console.log('알림이 생성되어 저장되었습니다:', notification);
+    updateNotificationCount(); // 알림 생성 시 UI 업데이트
+}
+
+// 현재 사용자의 알림을 불러와 모달에 표시
+function loadNotifications() {
+    const notificationList = document.getElementById('notificationList');
+    if (!notificationList) return;
+
+    notificationList.innerHTML = ''; // 기존 알림 비우기
+
+    if (!currentUser) {
+        notificationList.innerHTML = '<p class="notification-empty">로그인 후 알림을 확인해주세요.</p>';
+        return;
+    }
+
+    const userNotifications = JSON.parse(localStorage.getItem('userNotifications')) || {};
+    const notifications = userNotifications[currentUser.id] || [];
+
+    if (notifications.length === 0) {
+        notificationList.innerHTML = '<p class="notification-empty">새로운 알림이 없습니다.</p>';
+        return;
+    }
+
+    notifications.forEach(notif => {
+        const notificationItem = document.createElement('div');
+        notificationItem.classList.add('notification-item');
+        if (!notif.read) {
+            notificationItem.classList.add('unread');
+        }
+
+        notificationItem.innerHTML = `
+            <p>${notif.message}</p>
+            <a href="${notif.postLink}" onclick="markNotificationAsRead(${notif.id}); closeNotificationModal();">게시글 보기</a>
+            <span class="notification-time">${new Date(notif.timestamp).toLocaleString('ko-KR')}</span>
+            <button class="notification-delete" onclick="deleteNotification(${notif.id})">삭제</button>
+        `;
+        notificationList.appendChild(notificationItem);
+    });
+
+    updateNotificationCount();
+}
+
+// 알림 읽음 처리
+function markNotificationAsRead(notificationId) {
+    if (!currentUser) return;
+
+    const userNotifications = JSON.parse(localStorage.getItem('userNotifications')) || {};
+    const notifications = userNotifications[currentUser.id] || [];
+
+    const notifIndex = notifications.findIndex(notif => notif.id === notificationId);
+    if (notifIndex !== -1) {
+        notifications[notifIndex].read = true;
+        userNotifications[currentUser.id] = notifications;
+        localStorage.setItem('userNotifications', JSON.stringify(userNotifications));
+        updateNotificationCount();
+        loadNotifications(); // UI 업데이트
+    }
+}
+
+// 알림 삭제
+function deleteNotification(notificationId) {
+    if (!currentUser) return;
+
+    if (confirm('정말 이 알림을 삭제하시겠습니까?')) {
+        const userNotifications = JSON.parse(localStorage.getItem('userNotifications')) || {};
+        let notifications = userNotifications[currentUser.id] || [];
+    
+        notifications = notifications.filter(notif => notif.id !== notificationId);
+        userNotifications[currentUser.id] = notifications;
+        localStorage.setItem('userNotifications', JSON.stringify(userNotifications));
+        updateNotificationCount();
+        loadNotifications(); // UI 업데이트
+    }
+}
+
+// 읽지 않은 알림 개수 업데이트 (UI에 표시할 경우)
+function updateNotificationCount() {
+    if (!currentUser) {
+        const notificationCountElement = document.getElementById('notificationCount');
+        if (notificationCountElement) {
+            notificationCountElement.textContent = '';
+            notificationCountElement.style.display = 'none';
+        }
+        return;
+    }
+    const userNotifications = JSON.parse(localStorage.getItem('userNotifications')) || {};
+    const notifications = userNotifications[currentUser.id] || [];
+    const unreadCount = notifications.filter(notif => !notif.read).length;
+
+    const notificationCountElement = document.getElementById('notificationCount');
+    if (notificationCountElement) {
+        notificationCountElement.textContent = unreadCount > 0 ? unreadCount : '';
+        notificationCountElement.style.display = unreadCount > 0 ? 'flex' : 'none';
+    }
 }
 
 function openLoginModal() {
@@ -759,26 +920,29 @@ function viewPost(postId, linkPage = 'produce-read.html') {
 }
 
 window.addEventListener('DOMContentLoaded', function() {
-    checkLoginStatus();
-    
-    const loginModal = document.getElementById('loginModal');
-    loginModal.addEventListener('click', function(e) {
-        if (e.target === loginModal) {
-            closeLoginModal();
-        }
-    });
-    
-    const signupModal = document.getElementById('signupModal');
+    // 회원가입 모달
     signupModal.addEventListener('click', function(e) {
         if (e.target === signupModal) {
             closeSignupModal();
         }
     });
+
+    // 알림 모달 외부 클릭 시 닫기
+    const notificationModal = document.getElementById('notificationModal');
+    if (notificationModal) {
+        notificationModal.addEventListener('click', function(e) {
+            if (e.target === notificationModal) {
+                closeNotificationModal();
+            }
+        });
+    }
     
     document.addEventListener('click', function(e) {
         const mainDropdown = document.getElementById('mainUserDropdown');
+        const mainlogin = document.getElementById('mainlogin'); // login icon
         
-        if (mainDropdown && !mainDropdown.contains(e.target)) { // Check if element exists
+        // 드롭다운 외부, 로그인 아이콘 외부 클릭 시 닫기
+        if (mainDropdown && !mainDropdown.contains(e.target) && mainlogin && !mainlogin.contains(e.target)) {
             closeUserDropdown();
         }
     });
@@ -818,4 +982,5 @@ window.addEventListener('DOMContentLoaded', function() {
     
     loadTags();
     loadPosts();
+    updateNotificationCount(); // 알림 개수 초기화
 });
