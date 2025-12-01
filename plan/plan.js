@@ -470,7 +470,7 @@ function open_write() {
         openLoginModal();
         return;
     }
-    showLoadingAndNavigateToPage('write.html');
+    showLoadingAndNavigateToPage('plan-write.html');
 }
 
 function getPosts() {
@@ -692,10 +692,9 @@ function loadPosts() {
     const currentPosts = posts.slice(startIndex, endIndex);
     
     listitem.innerHTML = currentPosts.map(post => {
-        // 나의 게시글 모드일 때는 edit.html로, 아니면 read.html로
         const linkPage = (isMyPostsMode && currentUser && post.authorId === currentUser.id) 
             ? 'edit.html' 
-            : 'read.html';
+            : 'plan-read.html';
         
         return `
         <div class="post-card" onclick="viewPost(${post.id}, '${linkPage}')">
@@ -757,7 +756,7 @@ function changePage(page) {
     document.getElementById('listitem').scrollTop = 0;
 }
 
-function viewPost(postId, linkPage = 'read.html') {
+function viewPost(postId, linkPage = 'plan-read.html') {
     const targetUrl = `${linkPage}#${postId}`;
     showLoadingAndNavigateToPage(targetUrl);
 }

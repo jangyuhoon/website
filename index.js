@@ -16,10 +16,10 @@ let isScrollTriggered = false;
 // 각 화면별 이동할 페이지 매핑
 const pageMapping = {
     1: 'plan/plan.html',
-    2: 'produce.html',
-    3: 'consume.html',
-    4: 'reform.html',
-    5: 'donate.html'
+    2: 'produce/produce.html',
+    3: 'consume/consume.html',
+    4: 'reform/reform.html',
+    5: 'donate/donate.html'
 };
 
 // 초기 위치 설정 (첫 번째 실제 슬라이드로)

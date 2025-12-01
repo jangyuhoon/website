@@ -4,8 +4,112 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cycle | produce</title>
+
+    <link rel="stylesheet" href="produce.css">
 </head>
 <body>
-    <div style="font-size: 2rem; text-align: center; align-content: center;">produce</div>
+    <div class="grid">
+        <div class="login" id="mainlogin" onclick="handleloginClick(event)"></div>
+        <div class="user_dropdown" id="mainUserDropdown">
+            <div class="user_dropdown_item" onclick="openUserInfo()">회원 정보</div>
+            <div class="user_dropdown_item" onclick="openMyPosts()">나의 게시글</div>
+            <div class="user_dropdown_item" onclick="openMyLikes()">나의 좋아요</div>
+            <div class="user_dropdown_item" onclick="logout()">로그아웃</div>
+        </div>
+        <div class="write" onclick="open_write()">
+            글 작성
+        </div>
+        <div class="search">
+            <input type="text" class="search_text" id="search_function" placeholder="게시글 검색..." oninput="search_on()">
+        </div>
+        <div class="category" onclick="category_on()">
+            <div class="category_container">
+                <span class="category_text">생산</span>
+            </div>
+            <div class="category_dropdown">
+                <div id="category_item1" class="category_item" onclick="showLoadingAndNavigateToPage('../plan/plan.html')">1. 기획</div>
+                <div class="category_item" onclick="showLoadingAndNavigateToPage('produce.html')" style="background-color: black; color: white"><span>2. 생산</span></div>
+                <div class="category_item" onclick="showLoadingAndNavigateToPage('../consume/consume.html')">3. 소비</div>
+                <div class="category_item" onclick="showLoadingAndNavigateToPage('../reform/reform.html')">4. 리폼</div>
+                <div class="category_item" onclick="showLoadingAndNavigateToPage('../donate/donate.html')">5. 기부</div>
+            </div>
+        </div>
+        <div class="filter">
+            <!-- 정렬 옵션 추가 -->
+            <div class="sort_options">
+                <div class="sort_title">정렬 기준</div>
+                <div class="sort_item" onclick="changeSortOrder('latest')">
+                    <input type="radio" id="sort_latest" name="sort" value="latest" checked>
+                    <label for="sort_latest">최신순</label>
+                </div>
+                <div class="sort_item" onclick="changeSortOrder('popular')">
+                    <input type="radio" id="sort_popular" name="sort" value="popular">
+                    <label for="sort_popular">인기순</label>
+                </div>
+                <div class="sort_item" onclick="changeSortOrder('views')">
+                    <input type="radio" id="sort_views" name="sort" value="views">
+                    <label for="sort_views">조회순</label>
+                </div>
+            </div>
+            
+            <input type="text" class="tag_search" id="tagsearch_function" placeholder="태그 검색..." oninput="tag_on()">
+            <div class="tag_item" id="tagitem">
+                <!-- 태그 목록이 여기에 동적으로 추가됩니다 -->
+            </div>
+            <div class="tag_page" id="tagpage">
+                <!-- 태그 페이지네이션이 여기에 동적으로 추가됩니다 -->
+            </div>
+        </div>
+        <div class="info">
+            <div class="list_item" id="listitem">
+                <!-- 게시글 목록이 여기에 동적으로 추가됩니다 -->
+            </div>
+            <div class="list_page" id="listpage">
+                <!-- 페이지 버튼이 여기에 동적으로 추가됩니다 -->
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- 로그인 모달 -->
+    <div id="loginModal" class="modal">
+        <div class="modal_content">
+            <div class="modal_header">
+                <h2>로그인</h2>
+                <span class="modal_close" onclick="closeLoginModal()">&times;</span>
+            </div>
+            <div class="modal_body">
+                <input type="text" id="loginId" class="modal_input" placeholder="아이디" maxlength="20">
+                <input type="password" id="loginPassword" class="modal_input" placeholder="비밀번호" maxlength="20">
+                <button class="modal_button" onclick="handleLogin()">로그인</button>
+                <div class="modal_footer">
+                    <span>계정이 없으신가요? <a href="#" onclick="openSignupModal()">회원가입</a></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 회원가입 모달 -->
+    <div id="signupModal" class="modal">
+        <div class="modal_content">
+            <div class="modal_header">
+                <h2>회원가입</h2>
+                <span class="modal_close" onclick="closeSignupModal()">&times;</span>
+            </div>
+            <div class="modal_body">
+                <input type="text" id="signupId" class="modal_input" placeholder="아이디 (3-20자)" maxlength="20">
+                <input type="password" id="signupPassword" class="modal_input" placeholder="비밀번호 (4-20자)" maxlength="20">
+                <input type="password" id="signupPasswordConfirm" class="modal_input" placeholder="비밀번호 확인" maxlength="20">
+                <input type="text" id="signupNickname" class="modal_input" placeholder="닉네임 (2-10자)" maxlength="10">
+                <button class="modal_button" onclick="handleSignup()">가입하기</button>
+                <div class="modal_footer">
+                    <span>이미 계정이 있으신가요? <a href="#" onclick="openLoginModal()">로그인</a></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="produce.js"></script>
 </body>
 </html>

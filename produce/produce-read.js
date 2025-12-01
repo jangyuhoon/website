@@ -76,8 +76,12 @@ function openMyPosts() {
     closeUserDropdown();
     if (!currentUser) return;
     
-    localStorage.setItem('isMyPostsMode', 'true');
-    showLoadingAndNavigateToPage('produce.html');
+    // produce 게시판의 '나의 게시글' 모드 활성화
+    localStorage.setItem('produceIsMyPostsMode', 'true');
+    // 다른 모드 비활성화 (명확성을 위해)
+    localStorage.removeItem('produceIsMyLikesMode');
+    
+    window.location.href = 'produce.html';
 }
 
 // 나의 좋아요
@@ -85,7 +89,12 @@ function openMyLikes() {
     closeUserDropdown();
     if (!currentUser) return;
     
-    alert('나의 좋아요 기능은 준비 중입니다.');
+    // produce 게시판의 '나의 좋아요' 모드 활성화
+    localStorage.setItem('produceIsMyLikesMode', 'true');
+    // 다른 모드 비활성화
+    localStorage.removeItem('produceIsMyPostsMode');
+
+    window.location.href = 'produce.html';
 }
 
 // 로그인 모달 열기
@@ -157,9 +166,9 @@ function closeSignupModal() {
 // 회원가입 처리
 function handleSignup() {
     const id = document.getElementById('signupId').value.trim();
-    const password = document.getElementById('signupPassword').trim();
-    const passwordConfirm = document.getElementById('signupPasswordConfirm').trim();
-    const nickname = document.getElementById('signupNickname').trim();
+    const password = document.getElementById('signupPassword').value.trim();
+    const passwordConfirm = document.getElementById('signupPasswordConfirm').value.trim();
+    const nickname = document.getElementById('signupNickname').value.trim();
     
     if (!id || id.length < 3) {
         alert('아이디는 3자 이상이어야 합니다.');
@@ -406,10 +415,6 @@ function showLoadingAndNavigateToPage(targetPage) {
     }, 5000);
 }
 
-function goToCategoryHome() {
-    showLoadingAndNavigateToPage('produce.html');
-}
-
 // 카테고리 드롭다운 토글
 function category_on() {
     const dropdown = document.querySelector('.category_dropdown');
@@ -428,19 +433,21 @@ function category_on() {
     }
 }
 
-const urlParams = new URLSearchParams(window.location.search);
-const postId = parseInt(urlParams.get('id'));
-// Removed currentCategory constant
+// URL에서 게시글 ID 가져오기
+function getPostIdFromURL() {
+    const hash = window.location.hash;
+    return hash ? parseInt(hash.substring(1)) : null;
+}
 
 // localStorage에서 게시글 가져오기
 function getPosts() {
-    return JSON.parse(localStorage.getItem('posts')) || [];
+    return JSON.parse(localStorage.getItem('producePosts')) || [];
 }
 
-// 특정 ID와 카테고리의 게시글 찾기
-function getPost(id) { // Removed category parameter
+// 특정 ID의 게시글 찾기
+function getPostById(id) {
     const posts = getPosts();
-    return posts.find(post => post.id === id && post.category === 'produce'); // Hardcode 'produce'
+    return posts.find(post => post.id === id);
 }
 
 // 검색 기능 - 메인 페이지로 이동
@@ -452,30 +459,32 @@ function search_on() {
     
     // 검색어를 localStorage에 저장
     if (keyword) {
-        localStorage.setItem('searchKeyword', keyword);
+        localStorage.setItem('produceSearchKeyword', keyword);
         console.log('localStorage에 저장됨:', keyword);
     } else {
-        localStorage.removeItem('searchKeyword');
+        localStorage.removeItem('produceSearchKeyword');
     }
     
     // 메인 페이지로 이동
     showLoadingAndNavigateToPage('produce.html');
 }
 
+// 게시글 데이터 로드 및 표시
 function loadPost() {
+    const postId = getPostIdFromURL();
     const likeDiv = document.querySelector('.like'); // Get the .like div
 
-    if (!postId) { // Removed !currentCategory check
+    if (!postId) {
         alert('게시글을 찾을 수 없습니다.');
-        window.location.href = 'produce.html'; // Hardcode 'produce.html'
+        window.location.href = 'produce.html';
         return;
     }
 
-    let post = getPost(postId); // Removed category parameter
+    let post = getPostById(postId); // Use 'let' because we'll modify it
 
     if (!post) {
         alert('해당 게시글이 존재하지 않습니다.');
-        window.location.href = 'produce.html'; // Hardcode 'produce.html'
+        window.location.href = 'produce.html';
         return;
     }
 
@@ -530,14 +539,14 @@ function loadPost() {
     }
 }
 
-// 게시글 업데이트 (조회수, 좋아요 등)
+// 게시글 업데이트 (조회수 등)
 function updatePost(updatedPost) {
     const posts = getPosts();
-    const index = posts.findIndex(post => post.id === updatedPost.id && post.category === 'produce'); // Hardcode 'produce'
+    const index = posts.findIndex(post => post.id === updatedPost.id);
     
     if (index !== -1) {
         posts[index] = updatedPost;
-        localStorage.setItem('posts', JSON.stringify(posts));
+        localStorage.setItem('producePosts', JSON.stringify(posts));
         console.log('localStorage posts updated.');
     }
 }
@@ -615,11 +624,11 @@ window.addEventListener('DOMContentLoaded', function() {
     if (likeDiv) {
         const heartSvg = likeDiv.querySelector('.heart-svg');
 
-        // 호버 이벤트
+        // 호버 이벤트 (기존 코드 수정)
         if (heartSvg) {
             heartSvg.addEventListener('mouseenter', function() {
                 if (!likeDiv.classList.contains('liked')) {
-                    likeDiv.classList.add('hovering');
+                    likeDiv.classList.add('hovering'); // 임시 클래스로 호버 상태 표시
                 }
             });
 
@@ -631,45 +640,59 @@ window.addEventListener('DOMContentLoaded', function() {
         }
         
         // 클릭 이벤트
-        if (heartSvg) {
+        if (heartSvg) { // Ensure heartSvg exists before attaching listener
             heartSvg.addEventListener('click', function() {
+                console.log('--- Like Click Event ---');
                 if (!currentUser) {
+                    console.log('Not logged in. Opening login modal.');
                     alert('로그인이 필요한 서비스입니다.');
                     openLoginModal();
                     return;
                 }
+                console.log('Current User:', currentUser);
 
-                if (!postId) { // Removed !currentCategory check
-                    console.log('No Post ID found for like action.');
+                const postId = getPostIdFromURL();
+                console.log('Post ID:', postId);
+                if (!postId) {
+                    console.log('No Post ID found.');
                     return;
                 }
 
-                let post = getPost(postId); // Removed category parameter
+                let post = getPostById(postId);
+                console.log('Initial Post:', JSON.parse(JSON.stringify(post)));
                 if (!post) {
-                    console.log('Post not found for like action.');
+                    console.log('Post not found.');
                     return;
                 }
 
-                // Initialize likes and likedBy if missing
+                // Initialize likes and likedBy if missing (for older posts)
                 if (post.likes === undefined) post.likes = 0;
                 if (!post.likedBy) post.likedBy = [];
 
                 const userIndex = post.likedBy.indexOf(currentUser.id);
+                console.log('User index in likedBy:', userIndex);
 
                 if (userIndex === -1) { // Not liked, so like it
                     post.likedBy.push(currentUser.id);
                     post.likes++;
                     likeDiv.classList.add('liked');
+                    console.log('Post liked. New state:', post.likedBy, post.likes);
                 } else { // Already liked, so unlike it
                     post.likedBy.splice(userIndex, 1);
                     post.likes--;
                     likeDiv.classList.remove('liked');
+                    console.log('Post unliked. New state:', post.likedBy, post.likes);
                 }
                 updatePost(post);
+                console.log('Post updated and saved. Final Post:', JSON.parse(JSON.stringify(post)));
             });
         }
     }
     
     // 게시글 로드
+    loadPost();
+});
+// URL 해시 변경 시 게시글 다시 로드
+window.addEventListener('hashchange', function() {
     loadPost();
 });
