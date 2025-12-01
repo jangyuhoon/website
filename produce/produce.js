@@ -920,10 +920,12 @@ function viewPost(postId, linkPage = 'produce-read.html') {
 }
 
 window.addEventListener('DOMContentLoaded', function() {
-    // 회원가입 모달
-    signupModal.addEventListener('click', function(e) {
-        if (e.target === signupModal) {
-            closeSignupModal();
+    checkLoginStatus(); // 로그인 상태 확인
+    
+    const loginModal = document.getElementById('loginModal');
+    loginModal.addEventListener('click', function(e) {
+        if (e.target === loginModal) {
+            closeLoginModal();
         }
     });
 
