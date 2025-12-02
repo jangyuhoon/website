@@ -418,6 +418,48 @@ function initializeTagify(initialTags = []) {
     }
 }
 
+// 금액 입력 콤마 추가 함수
+function addCommas(num) {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+// 콤마 제거하고 숫자만 추출
+function removeCommas(str) {
+    return str.replace(/,/g, '');
+}
+
+// 금액 입력 필드 초기화
+function initializeAmountInput() {
+    const amountInput = document.querySelector('.subtitle');
+    
+    if (amountInput) {
+        // type을 text로 변경
+        amountInput.type = 'text';
+        
+        // 기존 값이 있으면 콤마 포맷 적용
+        if (amountInput.value) {
+            const numericValue = removeCommas(amountInput.value);
+            if (numericValue) {
+                amountInput.value = addCommas(numericValue);
+            }
+        }
+        
+        // 입력 시 자동으로 콤마 추가
+        amountInput.addEventListener('input', function(e) {
+            let value = removeCommas(e.target.value);
+            
+            // 숫자만 허용
+            value = value.replace(/[^\d]/g, '');
+            
+            if (value) {
+                e.target.value = addCommas(value);
+            } else {
+                e.target.value = '';
+            }
+        });
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const imgAddInput = document.getElementById('img_add');
     const imgLogSpan = document.getElementById('img_log');
@@ -453,7 +495,8 @@ async function updatePost() {
     }
 
     const title = document.querySelector('#writePage .title')?.value.trim();
-    const subtitle = document.querySelector('#writePage .subtitle')?.value.trim();
+    const subtitleInput = document.querySelector('#writePage .subtitle');
+    const subtitle = subtitleInput?.value.trim();
     const content = document.querySelector('#writePage .content')?.value.trim();
     const tags = tagify ? tagify.value.map(tag => tag.value) : [];
     const imageFile = document.getElementById('img_add')?.files[0];
@@ -463,6 +506,16 @@ async function updatePost() {
         alert('제목을 입력해주세요.');
         return;
     }
+    
+    // 금액 검증
+    if (subtitle) {
+        const amountValue = parseInt(removeCommas(subtitle));
+        if (isNaN(amountValue) || amountValue < 1000) {
+            alert('값이 최소값보다 작습니다.');
+            return;
+        }
+    }
+    
     if (!content) {
         alert('내용을 입력해주세요.');
         return;
@@ -548,7 +601,20 @@ function loadPostForEdit(postId) {
     // 폼 필드 채우기
     document.querySelector('#postId').value = post.id;
     document.querySelector('#writePage .title').value = post.title;
-    document.querySelector('#writePage .subtitle').value = post.subtitle || '';
+    
+    // subtitle 값 설정 (콤마 포맷 적용)
+    const subtitleInput = document.querySelector('#writePage .subtitle');
+    if (subtitleInput) {
+        subtitleInput.type = 'text'; // type을 text로 변경
+        const subtitleValue = post.subtitle || '';
+        if (subtitleValue) {
+            const numericValue = removeCommas(subtitleValue);
+            subtitleInput.value = addCommas(numericValue);
+        } else {
+            subtitleInput.value = '';
+        }
+    }
+    
     document.querySelector('#writePage .content').value = post.content;
     
     const imgLogSpan = document.getElementById('img_log');
@@ -619,6 +685,11 @@ window.addEventListener('DOMContentLoaded', function() {
         alert('편집할 게시글 ID가 URL에 없습니다.');
         window.location.href = 'consume.html'; // ID가 없으면 목록 페이지로 리다이렉트
     }
+
+    // 금액 입력 필드 초기화 (loadPostForEdit 이후에 호출)
+    setTimeout(() => {
+        initializeAmountInput();
+    }, 100);
 
     // 검색 초기화 (read.js에서 가져옴) - 현재 페이지에서는 검색 기능이 직접 사용되지 않을 수 있지만, 구조 유지를 위해 남겨둠.
     // 검색창 엔터키 이벤트 초기화 (from read.js)

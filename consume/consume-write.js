@@ -414,6 +414,40 @@ function initializeTagify() {
     }
 }
 
+// 금액 입력 콤마 추가 함수
+function addCommas(num) {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+// 콤마 제거하고 숫자만 추출
+function removeCommas(str) {
+    return str.replace(/,/g, '');
+}
+
+// 금액 입력 필드 초기화
+function initializeAmountInput() {
+    const amountInput = document.querySelector('.subtitle');
+    
+    if (amountInput) {
+        // type을 text로 변경
+        amountInput.type = 'text';
+        
+        // 입력 시 자동으로 콤마 추가
+        amountInput.addEventListener('input', function(e) {
+            let value = removeCommas(e.target.value);
+            
+            // 숫자만 허용
+            value = value.replace(/[^\d]/g, '');
+            
+            if (value) {
+                e.target.value = addCommas(value);
+            } else {
+                e.target.value = '';
+            }
+        });
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const imgAddInput = document.getElementById('img_add');
     const imgLogSpan = document.getElementById('img_log');
@@ -443,7 +477,8 @@ async function savePost() {
         return;
     }
     const title = document.querySelector('#writePage .title')?.value.trim(); // Optional chaining
-    const subtitle = document.querySelector('#writePage .subtitle')?.value.trim(); // Optional chaining
+    const subtitleInput = document.querySelector('#writePage .subtitle'); // 금액 입력 필드
+    const subtitle = subtitleInput?.value.trim(); // Optional chaining
     const content = document.querySelector('#writePage .content')?.value.trim(); // Optional chaining
     const tags = tagify ? tagify.value.map(tag => tag.value) : [];
     const imageFile = document.getElementById('img_add')?.files[0]; // Optional chaining
@@ -452,6 +487,16 @@ async function savePost() {
         alert('제목을 입력해주세요.');
         return;
     }
+    
+    // 금액 검증
+    if (subtitle) {
+        const amountValue = parseInt(removeCommas(subtitle));
+        if (isNaN(amountValue) || amountValue < 1000) {
+            alert('값이 최소값보다 작습니다.');
+            return;
+        }
+    }
+    
     if (!content) {
         alert('내용을 입력해주세요.');
         return;
@@ -503,7 +548,10 @@ async function savePost() {
     const imgLogElement = document.getElementById('img_log');
 
     if (writePageTitle) writePageTitle.value = '';
-    if (writePageSubtitle) writePageSubtitle.value = '';
+    if (writePageSubtitle) {
+        writePageSubtitle.value = '1,000';
+        writePageSubtitle.type = 'text';
+    }
     if (writePageContent) writePageContent.value = '';
     if (tagify) tagify.removeAllTags();
     if (imgAddElement) imgAddElement.value = '';
@@ -563,6 +611,9 @@ window.addEventListener('DOMContentLoaded', function() {
     // Initialize Tagify when the write page loads
     initializeTagify();
 
+    // 금액 입력 필드 초기화
+    initializeAmountInput();
+
     // 검색 초기화
     initializeSearch();
 });
@@ -590,10 +641,12 @@ function search_on() {
 function initializeSearch() {
     const searchInput = document.querySelector('.search_text');
     
-    // 엔터키 이벤트 추가
-    searchInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            search_on();
-        }
-    });
+    if (searchInput) {
+        // 엔터키 이벤트 추가
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                search_on();
+            }
+        });
+    }
 }

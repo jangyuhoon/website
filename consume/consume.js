@@ -858,12 +858,9 @@ function loadPosts() {
         <div class="post-card" onclick="viewPost(${post.id}, '${linkPage}')">
             <div class="post-content-area">
                 <div class="post-title">${post.title}</div>
-                <div class="post-subtitle">${post.subtitle || ''}</div>
+                <div class="post-subtitle">${post.subtitle || ''}원</div>
                 <div class="post-tags">
                     ${post.tags.map(tag => `<span class="post-tag">#${tag}</span>`).join('')}
-                </div>
-                <div class="post-meta">
-                    ${post.author ? `작성자: ${post.author} | ` : ''}${new Date(post.createdAt).toLocaleString('ko-KR')} | 조회 ${post.views} | 좋아요 ${post.likes}
                 </div>
             </div>
             ${post.image ? `<img src="${post.image}" alt="${post.title}" class="post-image">` : ''}

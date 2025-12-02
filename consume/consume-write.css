@@ -237,12 +237,25 @@ body {
     outline: none;
 }
 
-.subtitle {
+.price {
     grid-area: subtitle;
-    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.subtitle {
+    font-size: 1rem;
     field-sizing: content;
     border: 0;
     outline: none;
+    text-align: right;
+    color: #666;
+}
+
+.won {
+    font-size: 1rem;
+    color: #666;
 }
 
 .content {
