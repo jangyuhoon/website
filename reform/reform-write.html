@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cycle | produce-write</title>
+    <title>Cycle | reform-write</title>
 
-    <link rel="stylesheet" href="produce-write.css">
+    <link rel="stylesheet" href="reform-write.css">
 
     <script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify"></script>
     <script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.polyfills.min.js"></script>
@@ -31,12 +31,12 @@
             </div>
             <div class="category" onclick="category_on()">
                 <div class="category_container">
-                    <span class="category_text">생산</span>
+                    <span class="category_text">리폼</span>
                 </div>
                 <div class="category_dropdown">
                     <div class="category_item" onclick="showLoadingAndNavigateToPage('../plan/plan.html')">기획</div>
                     <div class="category_item" onclick="showLoadingAndNavigateToPage('../consume/consume.html')">소비</div>
-                    <div class="category_item" onclick="showLoadingAndNavigateToPage('produce.html')" style="background-color: black; color: white;">생산</div>
+                    <div class="category_item" onclick="showLoadingAndNavigateToPage('reform.html')" style="background-color: black; color: white;">리폼</div>
                 </div>
             </div>
             <div class="info">
@@ -50,7 +50,7 @@
                 </div>
                 <input placeholder="태그 추가" class="tag">
             </div>
-            <div class="recent" onclick="showLoadingAndNavigateToPage('produce.html')">최신 글</div>
+            <div class="recent" onclick="showLoadingAndNavigateToPage('reform.html')">최신 글</div>
             <div class="save" onclick="savePost()">게시</div>
         </div>
     </div>
@@ -95,6 +95,6 @@
 
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
-    <script src="produce-write.js"></script>
+    <script src="reform-write.js"></script>
 </body>
 </html>

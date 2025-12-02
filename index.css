@@ -53,14 +53,6 @@ body {
     background: #f0fff0;
 }
 
-.grid-4 {
-    background: #fffacd;
-}
-
-.grid-5 {
-    background: #ffe4e1;
-}
-
 .main {
     grid-area: main;
     text-align: center;

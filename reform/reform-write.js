@@ -1,5 +1,5 @@
 let tagify = null;
-let savedHashtags = JSON.parse(localStorage.getItem('produceSavedHashtags')) || [];
+let savedHashtags = JSON.parse(localStorage.getItem('reformSavedHashtags')) || [];
 let writeSelectedCategory = null; // Unused, but keep for consistency if it was intended
 
 let isNavigating = false; // 페이지 전환 중인지 여부
@@ -8,7 +8,7 @@ let isNavigating = false; // 페이지 전환 중인지 여부
 let currentUser = null;
 
 function getPosts() { // Utility function, duplicated for independence
-    return JSON.parse(localStorage.getItem('producePosts')) || [];
+    return JSON.parse(localStorage.getItem('reformPosts')) || [];
 }
 
 function checkLoginStatus() {
@@ -77,17 +77,17 @@ function openUserInfo() {
 function openMyPosts() {
     closeUserDropdown();
     if (!currentUser) return;
-    localStorage.setItem('produceIsMyPostsMode', 'true');
-    localStorage.removeItem('produceIsMyLikesMode'); // Ensure only one mode is active
-    window.location.href = 'produce.html';
+    localStorage.setItem('reformIsMyPostsMode', 'true');
+    localStorage.removeItem('reformIsMyLikesMode'); // Ensure only one mode is active
+    window.location.href = 'reform.html';
 }
 
 function openMyLikes() {
     closeUserDropdown();
     if (!currentUser) return;
-    localStorage.setItem('produceIsMyLikesMode', 'true');
-    localStorage.removeItem('produceIsMyPostsMode'); // Ensure only one mode is active
-    window.location.href = 'produce.html';
+    localStorage.setItem('reformIsMyLikesMode', 'true');
+    localStorage.removeItem('reformIsMyPostsMode'); // Ensure only one mode is active
+    window.location.href = 'reform.html';
 }
 
 function openLoginModal() {
@@ -472,7 +472,7 @@ async function savePost() {
             savedHashtags.push(tag);
         }
     });
-    localStorage.setItem('produceSavedHashtags', JSON.stringify(savedHashtags));
+    localStorage.setItem('reformSavedHashtags', JSON.stringify(savedHashtags));
     if (tagify) {
         tagify.whitelist = savedHashtags;
     }
@@ -494,7 +494,7 @@ async function savePost() {
         likedBy: []
     };
     posts.push(postData);
-    localStorage.setItem('producePosts', JSON.stringify(posts));
+    localStorage.setItem('reformPosts', JSON.stringify(posts));
     console.log('게시글 저장 완료:', postData);
     alert('게시 완료!');
     
@@ -512,7 +512,7 @@ async function savePost() {
     if (imgAddElement) imgAddElement.value = '';
     if (imgLogElement) imgLogElement.textContent = '선택된 파일 없음';
     
-    window.location.href = 'produce.html';
+    window.location.href = 'reform.html';
 }
 
 
@@ -579,14 +579,14 @@ function search_on() {
     
     // 검색어를 localStorage에 저장
     if (keyword) {
-        localStorage.setItem('produceSearchKeyword', keyword);
+        localStorage.setItem('reformSearchKeyword', keyword);
         console.log('localStorage에 저장됨:', keyword);
     } else {
-        localStorage.removeItem('produceSearchKeyword');
+        localStorage.removeItem('reformSearchKeyword');
     }
     
     // 메인 페이지로 이동
-    showLoadingAndNavigateToPage('produce.html');
+    showLoadingAndNavigateToPage('reform.html');
 }
 
 // 검색창 엔터키 이벤트 초기화 (from read.js)

@@ -1,5 +1,5 @@
 let tagify = null;
-let savedHashtags = JSON.parse(localStorage.getItem('produceSavedHashtags')) || [];
+let savedHashtags = JSON.parse(localStorage.getItem('reformSavedHashtags')) || [];
 let writeSelectedCategory = null; // Unused, but keep for consistency if it was intended
 
 let isNavigating = false; // 페이지 전환 중인지 여부
@@ -9,7 +9,7 @@ let currentPostId = null; // 현재 편집 중인 게시글 ID
 let currentUser = null;
 
 function getPosts() { // Utility function, duplicated for independence
-    return JSON.parse(localStorage.getItem('producePosts')) || [];
+    return JSON.parse(localStorage.getItem('reformPosts')) || [];
 }
 
 function checkLoginStatus() {
@@ -78,8 +78,8 @@ function openUserInfo() {
 function openMyPosts() {
     closeUserDropdown();
     if (!currentUser) return;
-    localStorage.setItem('produceIsMyPostsMode', 'true');
-    window.location.href = 'produce.html';
+    localStorage.setItem('reformIsMyPostsMode', 'true');
+    window.location.href = 'reform.html';
 }
 
 function openMyLikes() {
@@ -503,7 +503,7 @@ async function updatePost() {
             savedHashtags.push(tag);
         }
     });
-    localStorage.setItem('produceSavedHashtags', JSON.stringify(savedHashtags)); // Changed key
+    localStorage.setItem('reformSavedHashtags', JSON.stringify(savedHashtags)); // Changed key
 
     // 게시글 데이터 업데이트
     const updatedPostData = {
@@ -518,13 +518,13 @@ async function updatePost() {
     };
 
     posts[postIndex] = updatedPostData;
-    localStorage.setItem('producePosts', JSON.stringify(posts)); // Changed key
+    localStorage.setItem('reformPosts', JSON.stringify(posts)); // Changed key
 
     console.log('게시글 업데이트 완료:', updatedPostData);
     alert('게시글이 성공적으로 수정되었습니다!');
     
     // 수정 후 해당 게시글 조회 페이지로 이동
-    showLoadingAndNavigateToPage('produce-read.html#' + currentPostId); // Changed target
+    showLoadingAndNavigateToPage('reform-read.html#' + currentPostId); // Changed target
 }
 
 // 게시글 데이터를 불러와 폼에 채우는 함수
@@ -534,14 +534,14 @@ function loadPostForEdit(postId) {
 
     if (!post) {
         alert('편집할 게시글을 찾을 수 없습니다.');
-        window.location.href = 'produce.html'; // 게시글 목록 페이지로 리다이렉트 // Changed target
+        window.location.href = 'reform.html'; // 게시글 목록 페이지로 리다이렉트 // Changed target
         return;
     }
 
     // 현재 사용자가 게시글의 작성자인지 확인
     if (!currentUser || post.authorId !== currentUser.id) {
         alert('이 게시글을 수정할 권한이 없습니다.');
-        window.location.href = 'produce-read.html#' + postId; // 읽기 페이지로 리다이렉트 // Changed target
+        window.location.href = 'reform-read.html#' + postId; // 읽기 페이지로 리다이렉트 // Changed target
         return;
     }
 
@@ -618,7 +618,7 @@ window.addEventListener('DOMContentLoaded', function() {
         loadPostForEdit(currentPostId);
     } else {
         alert('편집할 게시글 ID가 URL에 없습니다.');
-        window.location.href = 'produce.html'; // ID가 없으면 목록 페이지로 리다이렉트 // Changed target
+        window.location.href = 'reform.html'; // ID가 없으면 목록 페이지로 리다이렉트 // Changed target
     }
 
     // 검색 초기화 (read.js에서 가져옴) - 현재 페이지에서는 검색 기능이 직접 사용되지 않을 수 있지만, 구조 유지를 위해 남겨둠.
@@ -642,12 +642,12 @@ function search_on() {
     
     // 검색어를 localStorage에 저장
     if (keyword) {
-        localStorage.setItem('produceSearchKeyword', keyword); // Changed key
+        localStorage.setItem('reformSearchKeyword', keyword); // Changed key
         console.log('localStorage에 저장됨:', keyword);
     } else {
-        localStorage.removeItem('produceSearchKeyword'); // Changed key
+        localStorage.removeItem('reformSearchKeyword'); // Changed key
     }
     
     // 메인 페이지로 이동
-    showLoadingAndNavigateToPage('produce.html'); // Changed target
+    showLoadingAndNavigateToPage('reform.html'); // Changed target
 }

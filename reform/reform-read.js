@@ -76,12 +76,12 @@ function openMyPosts() {
     closeUserDropdown();
     if (!currentUser) return;
     
-    // produce 게시판의 '나의 게시글' 모드 활성화
-    localStorage.setItem('produceIsMyPostsMode', 'true');
+    // reform 게시판의 '나의 게시글' 모드 활성화
+    localStorage.setItem('reformIsMyPostsMode', 'true');
     // 다른 모드 비활성화 (명확성을 위해)
-    localStorage.removeItem('produceIsMyLikesMode');
+    localStorage.removeItem('reformIsMyLikesMode');
     
-    window.location.href = 'produce.html';
+    window.location.href = 'reform.html';
 }
 
 // 나의 좋아요
@@ -89,12 +89,12 @@ function openMyLikes() {
     closeUserDropdown();
     if (!currentUser) return;
     
-    // produce 게시판의 '나의 좋아요' 모드 활성화
-    localStorage.setItem('produceIsMyLikesMode', 'true');
+    // reform 게시판의 '나의 좋아요' 모드 활성화
+    localStorage.setItem('reformIsMyLikesMode', 'true');
     // 다른 모드 비활성화
-    localStorage.removeItem('produceIsMyPostsMode');
+    localStorage.removeItem('reformIsMyPostsMode');
 
-    window.location.href = 'produce.html';
+    window.location.href = 'reform.html';
 }
 
 // =========================================================
@@ -143,7 +143,7 @@ function generateNotification(selectorId, selectedPostId) {
         selectorNickname: selectorNickname,
         postId: selectedPostId,
         postTitle: selectedPost.title,
-        postLink: `produce-read.html#${selectedPostId}`, // 현재 페이지의 게시글 링크
+        postLink: `reform-read.html#${selectedPostId}`, // 현재 페이지의 게시글 링크
         message: `${selectorNickname}님이 회원님의 게시글 "${selectedPost.title}"을(를) 선택하였습니다.`,
         timestamp: new Date().toISOString(),
         read: false
@@ -682,7 +682,7 @@ function getPostIdFromURL() {
 
 // localStorage에서 게시글 가져오기
 function getPosts() {
-    return JSON.parse(localStorage.getItem('producePosts')) || [];
+    return JSON.parse(localStorage.getItem('reformPosts')) || [];
 }
 
 // 특정 ID의 게시글 찾기
@@ -700,14 +700,14 @@ function search_on() {
     
     // 검색어를 localStorage에 저장
     if (keyword) {
-        localStorage.setItem('produceSearchKeyword', keyword);
+        localStorage.setItem('reformSearchKeyword', keyword);
         console.log('localStorage에 저장됨:', keyword);
     } else {
-        localStorage.removeItem('produceSearchKeyword');
+        localStorage.removeItem('reformSearchKeyword');
     }
     
     // 메인 페이지로 이동
-    showLoadingAndNavigateToPage('produce.html');
+    showLoadingAndNavigateToPage('reform.html');
 }
 
 // 게시글 데이터 로드 및 표시
@@ -717,7 +717,7 @@ function loadPost() {
 
     if (!postId) {
         alert('게시글을 찾을 수 없습니다.');
-        window.location.href = 'produce.html';
+        window.location.href = 'reform.html';
         return;
     }
 
@@ -725,7 +725,7 @@ function loadPost() {
 
     if (!post) {
         alert('해당 게시글이 존재하지 않습니다.');
-        window.location.href = 'produce.html';
+        window.location.href = 'reform.html';
         return;
     }
 
@@ -787,7 +787,7 @@ function updatePost(updatedPost) {
     
     if (index !== -1) {
         posts[index] = updatedPost;
-        localStorage.setItem('producePosts', JSON.stringify(posts));
+        localStorage.setItem('reformPosts', JSON.stringify(posts));
         console.log('localStorage posts updated.');
     }
 }

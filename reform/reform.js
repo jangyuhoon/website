@@ -1,4 +1,4 @@
-let savedHashtags = JSON.parse(localStorage.getItem('produceSavedHashtags')) || [];
+let savedHashtags = JSON.parse(localStorage.getItem('reformSavedHashtags')) || [];
 let currentPage = 1;
 const postsPerPage = 10;
 let searchKeyword = '';
@@ -88,17 +88,17 @@ function openMyPosts() {
     if (!currentUser) return;
     
     // 나의 게시글 모드 활성화 상태를 localStorage에 저장
-    localStorage.setItem('produceIsMyPostsMode', 'true');
-    localStorage.removeItem('produceIsMyLikesMode'); // 다른 모드 비활성화
+    localStorage.setItem('reformIsMyPostsMode', 'true');
+    localStorage.removeItem('reformIsMyLikesMode'); // 다른 모드 비활성화
     
     // 검색 및 필터 초기화 (새로고침 시에도 유지되도록 localStorage에 저장)
-    localStorage.setItem('produceSearchKeyword', '');
+    localStorage.setItem('reformSearchKeyword', '');
     document.getElementById('search_function').value = '';
     // selectedTag, tagSearchKeyword, currentPage는 DOMContentLoaded에서 초기화되므로 여기서 직접 수정
     // 또는 이벤트를 발생시켜 초기화 로직을 다시 실행
     
     // 페이지 새로고침 (DOMContentLoaded에서 상태를 읽어와 적용)
-    showLoadingAndNavigateToPage('produce.html');
+    showLoadingAndNavigateToPage('reform.html');
 }
 
 function openMyLikes() {
@@ -106,9 +106,9 @@ function openMyLikes() {
     if (!currentUser) return;
     
     // 나의 좋아요 모드 활성화 상태를 localStorage에 저장
-    localStorage.setItem('produceIsMyLikesMode', 'true');
+    localStorage.setItem('reformIsMyLikesMode', 'true');
     isMyLikesMode = true; // 현재 페이지에서 바로 적용
-    localStorage.removeItem('produceIsMyPostsMode'); // 다른 모드 비활성화
+    localStorage.removeItem('reformIsMyPostsMode'); // 다른 모드 비활성화
     isMyPostsMode = false;
 
     // 검색 및 필터 초기화
@@ -168,7 +168,7 @@ function generateNotification(selectorId, selectedPostId) {
         selectorNickname: selectorNickname,
         postId: selectedPostId,
         postTitle: selectedPost.title,
-        postLink: `produce-read.html#${selectedPostId}`, // 현재 페이지의 게시글 링크
+        postLink: `reform-read.html#${selectedPostId}`, // 현재 페이지의 게시글 링크
         message: `${selectorNickname}님이 회원님의 게시글 "${selectedPost.title}"을(를) 선택하였습니다.`,
         timestamp: new Date().toISOString(),
         read: false
@@ -626,17 +626,17 @@ function open_write() {
         openLoginModal();
         return;
     }
-    showLoadingAndNavigateToPage('produce-write.html');
+    showLoadingAndNavigateToPage('reform-write.html');
 }
 
 function getPosts() {
-    return JSON.parse(localStorage.getItem('producePosts')) || [];
+    return JSON.parse(localStorage.getItem('reformPosts')) || [];
 }
 
 function search_on() {
     searchKeyword = document.getElementById('search_function').value.trim().toLowerCase();
     currentPage = 1;
-    localStorage.setItem('produceSearchKeyword', searchKeyword); // 검색어 저장
+    localStorage.setItem('reformSearchKeyword', searchKeyword); // 검색어 저장
     loadPosts();
 }
 
@@ -849,10 +849,10 @@ function loadPosts() {
     const currentPosts = posts.slice(startIndex, endIndex);
     
     listitem.innerHTML = currentPosts.map(post => {
-        // 나의 게시글 모드일 때는 produce-edit.html로, 아니면 produce-read.html로
+        // 나의 게시글 모드일 때는 reform-edit.html로, 아니면 reform-read.html로
         const linkPage = (isMyPostsMode && currentUser && post.authorId === currentUser.id) 
-            ? 'produce-edit.html' 
-            : 'produce-read.html';
+            ? 'reform-edit.html' 
+            : 'reform-read.html';
         
         return `
         <div class="post-card" onclick="viewPost(${post.id}, '${linkPage}')">
@@ -914,7 +914,7 @@ function changePage(page) {
     document.getElementById('listitem').scrollTop = 0;
 }
 
-function viewPost(postId, linkPage = 'produce-read.html') {
+function viewPost(postId, linkPage = 'reform-read.html') {
     const targetUrl = `${linkPage}#${postId}`;
     showLoadingAndNavigateToPage(targetUrl);
 }
@@ -962,7 +962,7 @@ window.addEventListener('DOMContentLoaded', function() {
     });
     
     // 이 페이지에 진입할 때 localStorage에서 검색 키워드, 나의 게시글/좋아요 모드 상태를 읽어옴
-    const savedSearchKeyword = localStorage.getItem('produceSearchKeyword');
+    const savedSearchKeyword = localStorage.getItem('reformSearchKeyword');
     console.log('저장된 검색어:', savedSearchKeyword);
     
     if (savedSearchKeyword) {
@@ -971,15 +971,15 @@ window.addEventListener('DOMContentLoaded', function() {
         // 검색어는 DOMContentLoaded 후 loadPosts에서 반영될 것이므로 여기서 지울 필요 없음
     }
 
-    isMyPostsMode = localStorage.getItem('produceIsMyPostsMode') === 'true';
-    isMyLikesMode = localStorage.getItem('produceIsMyLikesMode') === 'true';
+    isMyPostsMode = localStorage.getItem('reformIsMyPostsMode') === 'true';
+    isMyLikesMode = localStorage.getItem('reformIsMyLikesMode') === 'true';
     
     // 최상위 창일 경우에만 localStorage 상태를 클리어하여, iframe 로드 시 중복 적용 방지
     // (그러나 이 스크립트가 iframe 내에서도 로드된다면, 그 동작은 달라질 수 있음)
     if (window.top === window.self) {
-        localStorage.removeItem('produceSearchKeyword');
-        localStorage.removeItem('produceIsMyPostsMode');
-        localStorage.removeItem('produceIsMyLikesMode');
+        localStorage.removeItem('reformSearchKeyword');
+        localStorage.removeItem('reformIsMyPostsMode');
+        localStorage.removeItem('reformIsMyLikesMode');
     }
     
     loadTags();
