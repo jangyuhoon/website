@@ -1,5 +1,4 @@
 let tagify = null;
-let savedHashtags = JSON.parse(localStorage.getItem('reformSavedHashtags')) || [];
 let writeSelectedCategory = null; // Unused, but keep for consistency if it was intended
 
 let isNavigating = false; // 페이지 전환 중인지 여부
@@ -7,9 +6,7 @@ let isNavigating = false; // 페이지 전환 중인지 여부
 // User Auth variables and functions (duplicated from main.js for independence)
 let currentUser = null;
 
-function getPosts() { // Utility function, duplicated for independence
-    return JSON.parse(localStorage.getItem('reformPosts')) || [];
-}
+
 
 function checkLoginStatus() {
     const loggedInUser = localStorage.getItem('currentUser');
@@ -401,12 +398,14 @@ function category_on() {
     }
 }
 
-function initializeTagify() {
+async function initializeTagify() {
     if (tagify) return; // Prevent re-initialization
     const input = document.querySelector('input.tag');
     if (input) { // Check if element exists
+        const storedTags = await appDB.getAll('reform_saved_hashtags');
+        const whitelist = storedTags.map(t => t.tag);
         tagify = new Tagify(input, {
-            whitelist: savedHashtags,
+            whitelist: whitelist,
             enforceWhitelist: false,
             dropdown: {
                 enabled: 0,
@@ -465,59 +464,68 @@ async function savePost() {
             imageData = await readImageAsBase64(imageFile);
         } catch (error) {
             console.error('이미지 읽기 실패:', error);
+            alert('이미지를 저장하는 데 실패했습니다. 다른 이미지를 사용해 보세요.');
+            return;
         }
     }
-    tags.forEach(tag => {
-        if (!savedHashtags.includes(tag)) {
-            savedHashtags.push(tag);
+    // Update hashtags in IndexedDB
+    for (const newTag of tags) {
+        try {
+            const existingTag = await appDB.get('reform_saved_hashtags', newTag);
+            if (!existingTag) {
+                await appDB.add('reform_saved_hashtags', { tag: newTag });
+            }
+        } catch (error) {
+            console.warn(`Failed to save hashtag ${newTag}:`, error);
         }
-    });
-    localStorage.setItem('reformSavedHashtags', JSON.stringify(savedHashtags));
-    if (tagify) {
-        tagify.whitelist = savedHashtags;
     }
-    const posts = getPosts();
-    const postId = posts.length > 0 ? Math.max(...posts.map(p => p.id)) + 1 : 1;
-    const postData = {
-        id: postId,
-        title: title,
-        subtitle: subtitle,
-        content: content,
-        tags: tags,
-        image: imageData,
-        imageName: imageFile?.name || null,
-        author: currentUser.nickname,
-        authorId: currentUser.id,
-        createdAt: new Date().toISOString(),
-        views: 0,
-        likes: 0,
-        likedBy: []
-    };
-    posts.push(postData);
-    localStorage.setItem('reformPosts', JSON.stringify(posts));
-    console.log('게시글 저장 완료:', postData);
-    alert('게시 완료!');
     
-    // Clear form fields
-    const writePageTitle = document.querySelector('#writePage .title');
-    const writePageSubtitle = document.querySelector('#writePage .subtitle');
-    const writePageContent = document.querySelector('#writePage .content');
-    const imgAddElement = document.getElementById('img_add');
-    const imgLogElement = document.getElementById('img_log');
+    try {
+        const postId = Date.now();
+        const postData = {
+            id: postId,
+            title: title,
+            subtitle: subtitle,
+            content: content,
+            tags: tags,
+            image: imageData,
+            imageName: imageFile?.name || null,
+            author: currentUser.nickname,
+            authorId: currentUser.id,
+            createdAt: new Date().toISOString(),
+            views: 0,
+            likes: 0,
+            likedBy: []
+        };
+        await appDB.add('reform_posts', postData); // IndexedDB에 추가
+        
+        console.log('게시글 저장 완료:', postData);
+        alert('게시 완료!');
+        
+        // Clear form fields
+        const writePageTitle = document.querySelector('#writePage .title');
+        const writePageSubtitle = document.querySelector('#writePage .subtitle');
+        const writePageContent = document.querySelector('#writePage .content');
+        const imgAddElement = document.getElementById('img_add');
+        const imgLogElement = document.getElementById('img_log');
 
-    if (writePageTitle) writePageTitle.value = '';
-    if (writePageSubtitle) writePageSubtitle.value = '';
-    if (writePageContent) writePageContent.value = '';
-    if (tagify) tagify.removeAllTags();
-    if (imgAddElement) imgAddElement.value = '';
-    if (imgLogElement) imgLogElement.textContent = '선택된 파일 없음';
-    
-    window.location.href = 'reform.html';
+        if (writePageTitle) writePageTitle.value = '';
+        if (writePageSubtitle) writePageSubtitle.value = '';
+        if (writePageContent) writePageContent.value = '';
+        if (tagify) tagify.removeAllTags();
+        if (imgAddElement) imgAddElement.value = '';
+        if (imgLogElement) imgLogElement.textContent = '선택된 파일 없음';
+        
+        window.location.href = 'reform.html';
+    } catch (error) {
+        console.error('게시글 저장 실패:', error);
+        alert('게시글 저장에 실패했습니다. 콘솔을 확인해주세요.');
+    }
 }
 
 
 // Event listeners for write.html
-window.addEventListener('DOMContentLoaded', function() {
+window.addEventListener('DOMContentLoaded', async function() {
     checkLoginStatus();
     
     const loginModal = document.getElementById('loginModal');
@@ -564,7 +572,7 @@ window.addEventListener('DOMContentLoaded', function() {
     }
     
     // Initialize Tagify when the write page loads
-    initializeTagify();
+    await initializeTagify();
 
     // 검색 초기화
     initializeSearch();

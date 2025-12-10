@@ -680,15 +680,28 @@ function getPostIdFromURL() {
     return hash ? parseInt(hash.substring(1)) : null;
 }
 
-// localStorage에서 게시글 가져오기
-function getPosts() {
-    return JSON.parse(localStorage.getItem('reformPosts')) || [];
+// IndexedDB에서 모든 게시글 가져오기 (비동기)
+async function getPosts() {
+    try {
+        return await appDB.getAll('reform_posts');
+    } catch (error) {
+        console.error('Failed to get posts from IndexedDB:', error);
+        return [];
+    }
 }
 
-// 특정 ID의 게시글 찾기
-function getPostById(id) {
-    const posts = getPosts();
-    return posts.find(post => post.id === id);
+// 특정 ID의 게시글 찾기 (비동기)
+async function getPostById(id) {
+    if (isNaN(id)) {
+        console.error('Invalid ID for getPostById:', id);
+        return null;
+    }
+    try {
+        return await appDB.get('reform_posts', id);
+    } catch (error) {
+        console.error(`Failed to get post ${id} from IndexedDB:`, error);
+        return null;
+    }
 }
 
 // 검색 기능 - 메인 페이지로 이동
@@ -710,10 +723,10 @@ function search_on() {
     showLoadingAndNavigateToPage('reform.html');
 }
 
-// 게시글 데이터 로드 및 표시
-function loadPost() {
+// 게시글 데이터 로드 및 표시 (비동기)
+async function loadPost() {
     const postId = getPostIdFromURL();
-    const likeDiv = document.querySelector('.like'); // Get the .like div
+    const likeDiv = document.querySelector('.like');
 
     if (!postId) {
         alert('게시글을 찾을 수 없습니다.');
@@ -721,21 +734,21 @@ function loadPost() {
         return;
     }
 
-    let post = getPostById(postId); // Use 'let' because we'll modify it
+    let post = await getPostById(postId);
 
     if (!post) {
         alert('해당 게시글이 존재하지 않습니다.');
         window.location.href = 'reform.html';
         return;
     }
-
+    
     // Initialize likes and likedBy if missing (for older posts)
     if (post.likes === undefined) post.likes = 0;
     if (!post.likedBy) post.likedBy = [];
 
-    // 조회수 증가
+    // 조회수 증가 및 업데이트
     post.views = (post.views || 0) + 1;
-    updatePost(post);
+    await updatePost(post);
 
     // Initial like state setup
     if (currentUser && post.likedBy.includes(currentUser.id)) {
@@ -780,15 +793,13 @@ function loadPost() {
     }
 }
 
-// 게시글 업데이트 (조회수 등)
-function updatePost(updatedPost) {
-    const posts = getPosts();
-    const index = posts.findIndex(post => post.id === updatedPost.id);
-    
-    if (index !== -1) {
-        posts[index] = updatedPost;
-        localStorage.setItem('reformPosts', JSON.stringify(posts));
-        console.log('localStorage posts updated.');
+// 게시글 업데이트 (비동기)
+async function updatePost(updatedPost) {
+    try {
+        await appDB.put('reform_posts', updatedPost);
+        console.log('Post updated in IndexedDB.');
+    } catch (error) {
+        console.error('Failed to update post in IndexedDB:', error);
     }
 }
 
@@ -893,9 +904,9 @@ window.addEventListener('DOMContentLoaded', function() {
             });
         }
         
-        // 클릭 이벤트
+        // 클릭 이벤트 (비동기)
         if (heartSvg) { // Ensure heartSvg exists before attaching listener
-            heartSvg.addEventListener('click', function() {
+            heartSvg.addEventListener('click', async function() {
                 console.log('--- Like Click Event ---');
                 if (!currentUser) {
                     console.log('Not logged in. Opening login modal.');
@@ -912,7 +923,7 @@ window.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
 
-                let post = getPostById(postId);
+                let post = await getPostById(postId); // 비동기로 변경
                 console.log('Initial Post:', JSON.parse(JSON.stringify(post)));
                 if (!post) {
                     console.log('Post not found.');
@@ -937,7 +948,7 @@ window.addEventListener('DOMContentLoaded', function() {
                     likeDiv.classList.remove('liked');
                     console.log('Post unliked. New state:', post.likedBy, post.likes);
                 }
-                updatePost(post);
+                await updatePost(post); // 비동기로 변경
                 console.log('Post updated and saved. Final Post:', JSON.parse(JSON.stringify(post)));
             });
         }

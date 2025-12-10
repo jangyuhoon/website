@@ -72,21 +72,28 @@ function openUserInfo() {
 }
 
 // 나의 게시글
-function openMyPosts() {
+async function openMyPosts() {
     closeUserDropdown();
     if (!currentUser) return;
     
-    window.location.href = 'plan.html';
+    // 나의 게시글 모드 활성화 (sessionStorage에 저장)
+    sessionStorage.setItem('planIsMyPostsMode', 'true');
+    sessionStorage.removeItem('planIsMyLikesMode'); // 다른 모드 비활성화
+    
+    // 검색 및 필터 초기화
+    localStorage.setItem('planSearchKeyword', ''); // plan.js에서 사용할 검색어 초기화
+    
+    showLoadingAndNavigateToPage('plan.html');
 }
 
 // 나의 좋아요
-function openMyLikes() {
+async function openMyLikes() {
     closeUserDropdown();
     if (!currentUser) return;
     
-    // 나의 좋아요 모드 활성화 상태를 localStorage에 저장
-    localStorage.setItem('planIsMyLikesMode', 'true');
-    localStorage.removeItem('planIsMyPostsMode'); // 다른 모드 비활성화
+    // 나의 좋아요 모드 활성화 상태를 sessionStorage에 저장
+    sessionStorage.setItem('planIsMyLikesMode', 'true');
+    sessionStorage.removeItem('planIsMyPostsMode'); // 다른 모드 비활성화
 
     // 검색 및 필터 초기화
     localStorage.setItem('planSearchKeyword', '');
@@ -118,8 +125,8 @@ function closeNotificationModal() {
 }
 
 // 알림 저장 (게시글 작성자에게)
-function generateNotification(selectorId, selectedPostId) {
-    const posts = getPosts();
+async function generateNotification(selectorId, selectedPostId) {
+    const posts = await getPosts(); // IndexedDB에서 게시글 가져오기
     const selectedPost = posts.find(post => post.id === selectedPostId);
 
     if (!selectedPost || !selectedPost.authorId) {
@@ -249,7 +256,7 @@ function updateNotificationCount() {
 
 
 // 게시글 선택 처리 (선택 버튼 클릭 시)
-function handlePostSelection() {
+async function handlePostSelection() {
     if (!currentUser) {
         alert('로그인이 필요한 서비스입니다.');
         openLoginModal();
@@ -262,7 +269,7 @@ function handlePostSelection() {
         return;
     }
 
-    const post = getPostById(postId);
+    const post = await getPostById(postId); // await 추가
     if (!post) {
         alert('해당 게시글을 찾을 수 없습니다.');
         return;
@@ -292,7 +299,7 @@ function handlePostSelection() {
         localStorage.setItem('userSelections', JSON.stringify(userSelections));
 
         // 알림 생성
-        generateNotification(currentUser.id, postId);
+        await generateNotification(currentUser.id, postId); // await 추가
 
         alert('게시글 선택이 완료되었습니다.');
         updateSelectButtonState(postId); // 버튼 상태 업데이트
@@ -300,7 +307,7 @@ function handlePostSelection() {
 }
 
 // 선택 버튼 상태 업데이트
-function updateSelectButtonState(postId) {
+async function updateSelectButtonState(postId) {
     const selectButton = document.querySelector('.select');
     if (!selectButton) return;
 
@@ -314,7 +321,7 @@ function updateSelectButtonState(postId) {
     const userSelections = JSON.parse(localStorage.getItem('userSelections')) || {};
     const currentUserSelections = userSelections[currentUser.id] || {};
     
-    const post = getPostById(postId);
+    const post = await getPostById(postId); // await 추가
     if (post && currentUser.id === post.authorId) {
         selectButton.classList.add('selected');
         selectButton.textContent = '내 게시글';
@@ -679,14 +686,26 @@ function getPostIdFromURL() {
 }
 
 // localStorage에서 게시글 가져오기
-function getPosts() {
-    return JSON.parse(localStorage.getItem('posts')) || [];
+// localStorage에서 게시글 가져오기 (IndexedDB 버전)
+async function getPosts() {
+    try {
+        const posts = await appDB.getAll('plan_posts');
+        return posts;
+    } catch (error) {
+        console.error('Failed to get posts from IndexedDB:', error);
+        return [];
+    }
 }
 
-// 특정 ID의 게시글 찾기
-function getPostById(id) {
-    const posts = getPosts();
-    return posts.find(post => post.id === id);
+// 특정 ID의 게시글 찾기 (IndexedDB 버전)
+async function getPostById(id) {
+    try {
+        const post = await appDB.get('plan_posts', id);
+        return post;
+    } catch (error) {
+        console.error(`Failed to get post with ID ${id} from IndexedDB:`, error);
+        return null;
+    }
 }
 
 // 검색 기능 - 메인 페이지로 이동
@@ -709,7 +728,7 @@ function search_on() {
 }
 
 // 게시글 데이터 로드 및 표시
-function loadPost() {
+async function loadPost() {
     const postId = getPostIdFromURL();
     const likeDiv = document.querySelector('.like'); // Get the .like div
 
@@ -719,7 +738,7 @@ function loadPost() {
         return;
     }
 
-    let post = getPostById(postId); // Use 'let' because we'll modify it
+    let post = await getPostById(postId); // Use 'let' because we'll modify it
 
     if (!post) {
         alert('해당 게시글이 존재하지 않습니다.');
@@ -733,7 +752,7 @@ function loadPost() {
 
     // 조회수 증가
     post.views = (post.views || 0) + 1;
-    updatePost(post);
+    await updatePost(post);
 
     // Initial like state setup
     if (currentUser && post.likedBy.includes(currentUser.id)) {
@@ -779,14 +798,12 @@ function loadPost() {
 }
 
 // 게시글 업데이트 (조회수 등)
-function updatePost(updatedPost) {
-    const posts = getPosts();
-    const index = posts.findIndex(post => post.id === updatedPost.id);
-    
-    if (index !== -1) {
-        posts[index] = updatedPost;
-        localStorage.setItem('posts', JSON.stringify(posts));
-        console.log('localStorage posts updated.');
+async function updatePost(updatedPost) {
+    try {
+        await appDB.put('plan_posts', updatedPost);
+        console.log('IndexedDB posts updated.');
+    } catch (error) {
+        console.error('Failed to update post in IndexedDB:', error);
     }
 }
 
@@ -803,11 +820,15 @@ function initializeSearch() {
 }
 
 // 페이지 로드 시 초기화
-window.addEventListener('DOMContentLoaded', function() {
+window.addEventListener('DOMContentLoaded', async function() { // async로 변경
     // 로그인 상태 확인
     checkLoginStatus();
     
-    // 로그인 모달 외부 클릭 시 닫기
+    // localStorage -> IndexedDB 마이그레이션 (한 번만 실행)
+    // plan-read.js에서는 게시글 목록을 직접 로드하지 않으므로, 이 부분은 plan.js에서만 실행.
+    // 하지만 안전을 위해 여기에 두거나, 필요에 따라 migrateFromLocalStorage 함수 자체를 호출할 수 있음.
+    // await appDB.migrateFromLocalStorage('posts', 'plan_posts'); 
+    
     const loginModal = document.getElementById('loginModal');
     if (loginModal) {
         loginModal.addEventListener('click', function(e) {
@@ -893,7 +914,7 @@ window.addEventListener('DOMContentLoaded', function() {
         
         // 클릭 이벤트
         if (heartSvg) { // Ensure heartSvg exists before attaching listener
-            heartSvg.addEventListener('click', function() {
+            heartSvg.addEventListener('click', async function() { // async로 변경
                 console.log('--- Like Click Event ---');
                 if (!currentUser) {
                     console.log('Not logged in. Opening login modal.');
@@ -910,7 +931,7 @@ window.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
 
-                let post = getPostById(postId);
+                let post = await getPostById(postId); // await 추가
                 console.log('Initial Post:', JSON.parse(JSON.stringify(post)));
                 if (!post) {
                     console.log('Post not found.');
@@ -935,27 +956,27 @@ window.addEventListener('DOMContentLoaded', function() {
                     likeDiv.classList.remove('liked');
                     console.log('Post unliked. New state:', post.likedBy, post.likes);
                 }
-                updatePost(post);
+                await updatePost(post); // await 추가
                 console.log('Post updated and saved. Final Post:', JSON.parse(JSON.stringify(post)));
             });
         }
     }
     
     // 게시글 로드
-    loadPost();
+    await loadPost(); // await 추가
 
     // 페이지 로드 후 선택 버튼 상태 업데이트
     const postId = getPostIdFromURL();
     if (postId) {
-        updateSelectButtonState(postId);
+        await updateSelectButtonState(postId); // await 추가
     }
     updateNotificationCount(); // 알림 개수 초기화
 });
 // URL 해시 변경 시 게시글 다시 로드
-window.addEventListener('hashchange', function() {
-    loadPost();
+window.addEventListener('hashchange', async function() { // async로 변경
+    await loadPost(); // await 추가
     const postId = getPostIdFromURL();
     if (postId) {
-        updateSelectButtonState(postId); // 해시 변경 시 버튼 상태 업데이트
+        await updateSelectButtonState(postId); // 해시 변경 시 버튼 상태 업데이트, await 추가
     }
 });

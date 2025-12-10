@@ -1,5 +1,4 @@
 let tagify = null;
-let savedHashtags = JSON.parse(localStorage.getItem('reformSavedHashtags')) || [];
 let writeSelectedCategory = null; // Unused, but keep for consistency if it was intended
 
 let isNavigating = false; // 페이지 전환 중인지 여부
@@ -7,10 +6,6 @@ let currentPostId = null; // 현재 편집 중인 게시글 ID
 
 // User Auth variables and functions (duplicated from main.js for independence)
 let currentUser = null;
-
-function getPosts() { // Utility function, duplicated for independence
-    return JSON.parse(localStorage.getItem('reformPosts')) || [];
-}
 
 function checkLoginStatus() {
     const loggedInUser = localStorage.getItem('currentUser');
@@ -399,12 +394,14 @@ function category_on() {
     }
 }
 
-function initializeTagify(initialTags = []) {
+async function initializeTagify(initialTags = []) {
     if (tagify) tagify.destroy(); // Destroy previous instance if exists
     const input = document.querySelector('input.tag');
     if (input) { // Check if element exists
+        const storedTags = await appDB.getAll('reform_saved_hashtags');
+        const whitelist = storedTags.map(t => t.tag);
         tagify = new Tagify(input, {
-            whitelist: savedHashtags,
+            whitelist: whitelist,
             enforceWhitelist: false,
             dropdown: {
                 enabled: 0,
@@ -440,7 +437,7 @@ function readImageAsBase64(file) {
     });
 }
 
-// 기존 savePost 함수를 updatePost 함수로 변경
+// 기존 savePost 함수를 updatePost 함수로 변경 (비동기)
 async function updatePost() {
     if (!currentUser) {
         alert('로그인이 필요한 서비스입니다.');
@@ -457,7 +454,6 @@ async function updatePost() {
     const content = document.querySelector('#writePage .content')?.value.trim();
     const tags = tagify ? tagify.value.map(tag => tag.value) : [];
     const imageFile = document.getElementById('img_add')?.files[0];
-    const hiddenPostIdInput = document.getElementById('postId');
 
     if (!title) {
         alert('제목을 입력해주세요.');
@@ -468,101 +464,102 @@ async function updatePost() {
         return;
     }
 
-    let imageData = null;
-    let imageName = null;
-
-    // 기존 이미지 데이터 가져오기 (파일이 새로 선택되지 않은 경우를 대비)
-    let posts = getPosts();
-    let postIndex = posts.findIndex(p => p.id === parseInt(currentPostId));
-
-    if (postIndex === -1) {
-        alert('해당 게시글을 찾을 수 없습니다.');
-        return;
-    }
-
-    const existingPost = posts[postIndex];
-    
-    if (imageFile) {
-        try {
-            imageData = await readImageAsBase64(imageFile);
-            imageName = imageFile.name;
-        } catch (error) {
-            console.error('이미지 읽기 실패:', error);
-            alert('이미지 파일 읽기에 실패했습니다.');
+    try {
+        const existingPost = await appDB.get('reform_posts', parseInt(currentPostId));
+        if (!existingPost) {
+            alert('해당 게시글을 찾을 수 없습니다.');
             return;
         }
-    } else {
-        // 새 파일이 없으면 기존 이미지 유지
-        imageData = existingPost.image;
-        imageName = existingPost.imageName;
-    }
 
-    // 새롭게 추가된 태그를 savedHashtags에 반영
-    tags.forEach(tag => {
-        if (!savedHashtags.includes(tag)) {
-            savedHashtags.push(tag);
+        let imageData = existingPost.image; // 기본값은 기존 이미지
+        let imageName = existingPost.imageName;
+
+        if (imageFile) {
+            try {
+                imageData = await readImageAsBase64(imageFile);
+                imageName = imageFile.name;
+            } catch (error) {
+                console.error('이미지 읽기 실패:', error);
+                alert('이미지 파일 읽기에 실패했습니다.');
+                return;
+            }
         }
-    });
-    localStorage.setItem('reformSavedHashtags', JSON.stringify(savedHashtags)); // Changed key
 
-    // 게시글 데이터 업데이트
-    const updatedPostData = {
-        ...existingPost, // 기존 데이터 유지
-        title: title,
-        subtitle: subtitle,
-        content: content,
-        tags: tags,
-        image: imageData,
-        imageName: imageName,
-        updatedAt: new Date().toISOString() // 수정 시간 기록
-    };
+        // 해시태그를 IndexedDB에 업데이트
+        for (const newTag of tags) {
+            try {
+                const existingTag = await appDB.get('reform_saved_hashtags', newTag);
+                if (!existingTag) {
+                    await appDB.add('reform_saved_hashtags', { tag: newTag });
+                }
+            } catch (error) {
+                console.warn(`Failed to save hashtag ${newTag}:`, error);
+            }
+        }
 
-    posts[postIndex] = updatedPostData;
-    localStorage.setItem('reformPosts', JSON.stringify(posts)); // Changed key
+        // 게시글 데이터 업데이트
+        const updatedPostData = {
+            ...existingPost,
+            title: title,
+            subtitle: subtitle,
+            content: content,
+            tags: tags,
+            image: imageData,
+            imageName: imageName,
+            updatedAt: new Date().toISOString()
+        };
 
-    console.log('게시글 업데이트 완료:', updatedPostData);
-    alert('게시글이 성공적으로 수정되었습니다!');
-    
-    // 수정 후 해당 게시글 조회 페이지로 이동
-    showLoadingAndNavigateToPage('reform-read.html#' + currentPostId); // Changed target
+        await appDB.put('reform_posts', updatedPostData);
+
+        console.log('게시글 업데이트 완료:', updatedPostData);
+        alert('게시글이 성공적으로 수정되었습니다!');
+        
+        showLoadingAndNavigateToPage('reform-read.html#' + currentPostId);
+    } catch (error) {
+        console.error('게시글 업데이트 실패:', error);
+        alert('게시글 업데이트에 실패했습니다. 콘솔을 확인해주세요.');
+    }
 }
 
-// 게시글 데이터를 불러와 폼에 채우는 함수
-function loadPostForEdit(postId) {
-    const posts = getPosts();
-    const post = posts.find(p => p.id === parseInt(postId));
+// 게시글 데이터를 불러와 폼에 채우는 함수 (비동기)
+async function loadPostForEdit(postId) {
+    try {
+        const post = await appDB.get('reform_posts', parseInt(postId));
 
-    if (!post) {
-        alert('편집할 게시글을 찾을 수 없습니다.');
-        window.location.href = 'reform.html'; // 게시글 목록 페이지로 리다이렉트 // Changed target
-        return;
+        if (!post) {
+            alert('편집할 게시글을 찾을 수 없습니다.');
+            window.location.href = 'reform.html';
+            return;
+        }
+
+        if (!currentUser || post.authorId !== currentUser.id) {
+            alert('이 게시글을 수정할 권한이 없습니다.');
+            window.location.href = 'reform-read.html#' + postId;
+            return;
+        }
+
+        document.querySelector('#postId').value = post.id;
+        document.querySelector('#writePage .title').value = post.title;
+        document.querySelector('#writePage .subtitle').value = post.subtitle || '';
+        document.querySelector('#writePage .content').value = post.content;
+        
+        const imgLogSpan = document.getElementById('img_log');
+        if (imgLogSpan) {
+            imgLogSpan.textContent = post.imageName || '선택된 파일 없음';
+        }
+
+        // Tagify 초기화 및 태그 채우기
+        await initializeTagify(post.tags); // 비동기로 변경
+    } catch (error) {
+        console.error('Failed to load post for editing:', error);
+        alert('게시글 정보를 불러오는 데 실패했습니다.');
+        window.location.href = 'reform.html';
     }
-
-    // 현재 사용자가 게시글의 작성자인지 확인
-    if (!currentUser || post.authorId !== currentUser.id) {
-        alert('이 게시글을 수정할 권한이 없습니다.');
-        window.location.href = 'reform-read.html#' + postId; // 읽기 페이지로 리다이렉트 // Changed target
-        return;
-    }
-
-    // 폼 필드 채우기
-    document.querySelector('#postId').value = post.id;
-    document.querySelector('#writePage .title').value = post.title;
-    document.querySelector('#writePage .subtitle').value = post.subtitle || '';
-    document.querySelector('#writePage .content').value = post.content;
-    
-    const imgLogSpan = document.getElementById('img_log');
-    if (imgLogSpan) {
-        imgLogSpan.textContent = post.imageName || '선택된 파일 없음';
-    }
-
-    // Tagify 초기화 및 태그 채우기
-    initializeTagify(post.tags);
 }
 
 
 // Event listeners for edit.html
-window.addEventListener('DOMContentLoaded', function() {
+window.addEventListener('DOMContentLoaded', async function() {
     checkLoginStatus();
     
     const loginModal = document.getElementById('loginModal');
@@ -615,7 +612,7 @@ window.addEventListener('DOMContentLoaded', function() {
     }
 
     if (currentPostId) {
-        loadPostForEdit(currentPostId);
+        await loadPostForEdit(currentPostId);
     } else {
         alert('편집할 게시글 ID가 URL에 없습니다.');
         window.location.href = 'reform.html'; // ID가 없으면 목록 페이지로 리다이렉트 // Changed target

@@ -1,4 +1,3 @@
-let savedHashtags = JSON.parse(localStorage.getItem('savedHashtags')) || [];
 let currentPage = 1;
 const postsPerPage = 10;
 let searchKeyword = '';
@@ -6,7 +5,7 @@ let searchKeyword = '';
 let selectedTag = null;
 let tagSearchKeyword = '';
 let currentTagPage = 1;
-const tagsPerPage = 15;
+const tagsPerPage = 7;
 
 let sortOrder = 'latest';
 let currentUser = null;
@@ -83,13 +82,14 @@ function openUserInfo() {
     }
 }
 
-function openMyPosts() {
+async function openMyPosts() {
     closeUserDropdown();
     if (!currentUser) return;
     
-    // 나의 게시글 모드 활성화
-    isMyPostsMode = true;
-    
+    // 나의 게시글 모드 활성화 (sessionStorage로 변경)
+    sessionStorage.setItem('planIsMyPostsMode', 'true');
+    sessionStorage.removeItem('planIsMyLikesMode'); // 다른 모드 비활성화
+
     // 검색 및 필터 초기화
     searchKeyword = '';
     document.getElementById('search_function').value = '';
@@ -98,18 +98,17 @@ function openMyPosts() {
     document.getElementById('tagsearch_function').value = '';
     currentPage = 1;
     
-    loadPosts();
+    await loadPosts();
     alert(`${currentUser.nickname}님이 작성한 게시글만 표시됩니다.`);
 }
 
-function openMyLikes() {
+async function openMyLikes() {
     closeUserDropdown();
     if (!currentUser) return;
     
-    // 나의 좋아요 모드 활성화
-    localStorage.setItem('planIsMyLikesMode', 'true');
-    isMyLikesMode = true; // 현재 페이지에서 바로 적용
-    isMyPostsMode = false; // 나의 게시글 모드 비활성화
+    // 나의 좋아요 모드 활성화 (sessionStorage로 변경)
+    sessionStorage.setItem('planIsMyLikesMode', 'true');
+    sessionStorage.removeItem('planIsMyPostsMode'); // 다른 모드 비활성화
 
     // 검색 및 필터 초기화
     searchKeyword = '';
@@ -119,7 +118,7 @@ function openMyLikes() {
     document.getElementById('tagsearch_function').value = '';
     currentPage = 1;
     
-    loadPosts();
+    await loadPosts();
     alert(`${currentUser.nickname}님이 좋아요를 누른 게시글만 표시됩니다.`);
 }
 
@@ -146,8 +145,8 @@ function closeNotificationModal() {
 }
 
 // 알림 저장 (게시글 작성자에게)
-function generateNotification(selectorId, selectedPostId) {
-    const posts = getPosts();
+async function generateNotification(selectorId, selectedPostId) {
+    const posts = await getPosts(); // IndexedDB에서 게시글 가져오기
     const selectedPost = posts.find(post => post.id === selectedPostId);
 
     if (!selectedPost || !selectedPost.authorId) {
@@ -590,7 +589,7 @@ function showLoadingAndNavigateToPage(targetPage) {
     }, 5000);
 }
 
-function changeSortOrder(order) {
+async function changeSortOrder(order) {
     // 이전에는 popular일 때 return 했으나, 이제 구현하므로 제거
     
     sortOrder = order;
@@ -599,7 +598,7 @@ function changeSortOrder(order) {
     document.getElementById('sort_views').checked = (order === 'views');
     
     currentPage = 1;
-    loadPosts();
+    await loadPosts();
 }
 
 
@@ -630,14 +629,20 @@ function open_write() {
     showLoadingAndNavigateToPage('plan-write.html');
 }
 
-function getPosts() {
-    return JSON.parse(localStorage.getItem('posts')) || [];
+async function getPosts() {
+    try {
+        const posts = await appDB.getAll('plan_posts');
+        return posts;
+    } catch (error) {
+        console.error('Failed to get posts from IndexedDB:', error);
+        return [];
+    }
 }
 
-function search_on() {
+async function search_on() {
     searchKeyword = document.getElementById('search_function').value.trim().toLowerCase();
     currentPage = 1;
-    loadPosts();
+    await loadPosts();
 }
 
 function filterPosts(posts) {
@@ -700,34 +705,42 @@ function tag_on() {
     loadTags();
 }
 
-function selectTag(tag) {
+async function selectTag(tag) {
     if (selectedTag === tag) {
         selectedTag = null;
     } else {
         selectedTag = tag;
     }
     currentPage = 1;
-    loadTags();
-    loadPosts();
+    await loadTags();
+    await loadPosts();
 }
 
-function getTagCounts() {
-    const posts = getPosts();
-    const tagCounts = {};
-    
-    posts.forEach(post => {
-        if (post.tags) {
-            post.tags.forEach(tag => {
-                tagCounts[tag] = (tagCounts[tag] || 0) + 1;
-            });
-        }
-    });
-    
-    return tagCounts;
+async function getTagCounts() {
+    try {
+        const allTags = await appDB.getAll('plan_saved_hashtags');
+        const tagCounts = {};
+        allTags.forEach(t => {
+            tagCounts[t.tag] = t.count || 1;
+        });
+        return tagCounts;
+    } catch (error) {
+        console.error('Failed to get tag counts from IndexedDB, falling back to post scan:', error);
+        const posts = await getPosts();
+        const tagCounts = {};
+        posts.forEach(post => {
+            if (post.tags) {
+                post.tags.forEach(tag => {
+                    tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+                });
+            }
+        });
+        return tagCounts;
+    }
 }
 
-function loadTags() {
-    const tagCounts = getTagCounts();
+async function loadTags() {
+    const tagCounts = await getTagCounts(); // async로 변경
     let allTags = Object.keys(tagCounts);
     const tagitem = document.getElementById('tagitem');
     const tagpage = document.getElementById('tagpage');
@@ -800,8 +813,8 @@ function rendertagpage(totalPages) {
     tagpage.innerHTML = listpageHTML;
 }
 
-function changeTagPage(page) {
-    const tagCounts = getTagCounts();
+async function changeTagPage(page) {
+    const tagCounts = await getTagCounts(); // async로 변경
     let allTags = Object.keys(tagCounts);
     
     if (tagSearchKeyword) {
@@ -812,11 +825,11 @@ function changeTagPage(page) {
     if (page < 1 || page > totalPages) return;
     
     currentTagPage = page;
-    loadTags();
+    await loadTags();
 }
 
-function loadPosts() {
-    let posts = getPosts();
+async function loadPosts() {
+    let posts = await getPosts(); // IndexedDB에서 게시글 가져오기
     const listitem = document.getElementById('listitem');
     const listpageDiv = document.getElementById('listpage');
     
@@ -825,8 +838,12 @@ function loadPosts() {
         listpageDiv.innerHTML = '';
         return;
     }
+
+    // sessionStorage에서 나의 게시글/좋아요 모드 상태 불러오기
+    isMyPostsMode = sessionStorage.getItem('planIsMyPostsMode') === 'true';
+    isMyLikesMode = sessionStorage.getItem('planIsMyLikesMode') === 'true';
     
-    posts = filterPosts(posts);
+    posts = await filterPosts(posts); // async로 변경
     posts = sortPosts(posts);
     
     if (posts.length === 0) {
@@ -902,13 +919,16 @@ function renderlistpage(totalPages) {
     listpageDiv.innerHTML = listpageHTML;
 }
 
-function changePage(page) {
-    const posts = sortPosts(filterPosts(getPosts()));
-    const totalPages = Math.ceil(posts.length / postsPerPage);
+async function changePage(page) {
+    const posts = await getPosts(); // IndexedDB에서 게시글 가져오기
+    const filteredPosts = await filterPosts(posts); // async로 변경
+    const sortedPosts = sortPosts(filteredPosts);
+
+    const totalPages = Math.ceil(sortedPosts.length / postsPerPage);
     if (page < 1 || page > totalPages) return;
     
     currentPage = page;
-    loadPosts();
+    await loadPosts(); // async로 변경
     
     document.getElementById('listitem').scrollTop = 0;
 }
@@ -918,8 +938,33 @@ function viewPost(postId, linkPage = 'plan-read.html') {
     showLoadingAndNavigateToPage(targetUrl);
 }
 
-window.addEventListener('DOMContentLoaded', function() {
+window.addEventListener('DOMContentLoaded', async function() { // async로 변경
     checkLoginStatus();
+    
+    // localStorage -> IndexedDB 마이그레이션 (한 번만 실행)
+    await appDB.migrateFromLocalStorage('posts', 'plan_posts');
+
+    // 해시태그 마이그레이션 로직 추가
+    const savedHashtagsFromLS = JSON.parse(localStorage.getItem('savedHashtags')) || [];
+    if (savedHashtagsFromLS.length > 0) {
+        for (const hashtag of savedHashtagsFromLS) {
+            try {
+                // 기존 태그가 있는지 확인하고 count를 업데이트하거나 새로 추가합니다.
+                const existingTag = await appDB.get('plan_saved_hashtags', hashtag);
+                if (existingTag) {
+                    existingTag.count += 1;
+                    await appDB.put('plan_saved_hashtags', existingTag);
+                } else {
+                    await appDB.put('plan_saved_hashtags', { tag: hashtag, count: 1 });
+                }
+            } catch (error) {
+                console.warn(`Failed to migrate hashtag ${hashtag}:`, error);
+            }
+        }
+        // 마이그레이션 성공 후 localStorage 정리
+        localStorage.removeItem('savedHashtags');
+        console.log('Hashtags migrated and savedHashtags removed from localStorage.');
+    }
     
     const loginModal = document.getElementById('loginModal');
     loginModal.addEventListener('click', function(e) {
@@ -977,7 +1022,17 @@ window.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    loadTags();
-    loadPosts();
+    // sessionStorage에서 나의 게시글/좋아요 모드 상태 불러오기
+    isMyPostsMode = sessionStorage.getItem('planIsMyPostsMode') === 'true';
+    isMyLikesMode = sessionStorage.getItem('planIsMyLikesMode') === 'true';
+
+    // 최상위 창일 경우에만 sessionStorage 상태를 클리어하여, 필터 상태가 유지되지 않도록 함
+    if (window.top === window.self) {
+        sessionStorage.removeItem('planIsMyPostsMode');
+        sessionStorage.removeItem('planIsMyLikesMode');
+    }
+
+    await loadTags(); // async로 변경
+    await loadPosts(); // async로 변경
     updateNotificationCount(); // 알림 개수 초기화
 });

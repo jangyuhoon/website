@@ -1,4 +1,3 @@
-let savedHashtags = JSON.parse(localStorage.getItem('consumeSavedHashtags')) || [];
 let currentPage = 1;
 const postsPerPage = 10;
 let searchKeyword = '';
@@ -6,7 +5,7 @@ let searchKeyword = '';
 let selectedTag = null;
 let tagSearchKeyword = '';
 let currentTagPage = 1;
-const tagsPerPage = 15;
+const tagsPerPage = 7;
 
 let sortOrder = 'latest';
 let currentUser = null;
@@ -83,33 +82,13 @@ function openUserInfo() {
     }
 }
 
-function openMyPosts() {
+async function openMyPosts() {
     closeUserDropdown();
     if (!currentUser) return;
     
-    // 나의 게시글 모드 활성화 상태를 localStorage에 저장
-    localStorage.setItem('consumeIsMyPostsMode', 'true');
-    localStorage.removeItem('consumeIsMyLikesMode'); // 다른 모드 비활성화
-    
-    // 검색 및 필터 초기화 (새로고침 시에도 유지되도록 localStorage에 저장)
-    localStorage.setItem('consumeSearchKeyword', '');
-    document.getElementById('search_function').value = '';
-    // selectedTag, tagSearchKeyword, currentPage는 DOMContentLoaded에서 초기화되므로 여기서 직접 수정
-    // 또는 이벤트를 발생시켜 초기화 로직을 다시 실행
-    
-    // 페이지 새로고침 (DOMContentLoaded에서 상태를 읽어와 적용)
-    showLoadingAndNavigateToPage('consume.html');
-}
-
-function openMyLikes() {
-    closeUserDropdown();
-    if (!currentUser) return;
-    
-    // 나의 좋아요 모드 활성화 상태를 localStorage에 저장
-    localStorage.setItem('consumeIsMyLikesMode', 'true');
-    isMyLikesMode = true; // 현재 페이지에서 바로 적용
-    localStorage.removeItem('consumeIsMyPostsMode'); // 다른 모드 비활성화
-    isMyPostsMode = false;
+    // 나의 게시글 모드 활성화 (sessionStorage로 변경)
+    sessionStorage.setItem('consumeIsMyPostsMode', 'true');
+    sessionStorage.removeItem('consumeIsMyLikesMode'); // 다른 모드 비활성화
 
     // 검색 및 필터 초기화
     searchKeyword = '';
@@ -119,7 +98,28 @@ function openMyLikes() {
     document.getElementById('tagsearch_function').value = '';
     currentPage = 1;
     
-    loadPosts();
+    await loadPosts();
+    alert(`${currentUser.nickname}님이 작성한 게시글만 표시됩니다.`);
+}
+
+async function openMyLikes() {
+    closeUserDropdown();
+    if (!currentUser) return;
+    
+    // 나의 좋아요 모드 활성화 (sessionStorage로 변경)
+    sessionStorage.setItem('consumeIsMyLikesMode', 'true');
+    sessionStorage.removeItem('consumeIsMyPostsMode'); // 다른 모드 비활성화
+
+    // 검색 및 필터 초기화
+    searchKeyword = '';
+    document.getElementById('search_function').value = '';
+    selectedTag = null;
+    tagSearchKeyword = '';
+    document.getElementById('tagsearch_function').value = '';
+    currentPage = 1;
+    
+    await loadPosts();
+    alert(`${currentUser.nickname}님이 좋아요를 누른 게시글만 표시됩니다.`);
 }
 
 // =========================================================
@@ -145,8 +145,8 @@ function closeNotificationModal() {
 }
 
 // 알림 저장 (게시글 작성자에게)
-function generateNotification(selectorId, selectedPostId) {
-    const posts = getPosts();
+async function generateNotification(selectorId, selectedPostId) {
+    const posts = await getPosts(); // IndexedDB에서 게시글 가져오기
     const selectedPost = posts.find(post => post.id === selectedPostId);
 
     if (!selectedPost || !selectedPost.authorId) {
@@ -589,7 +589,7 @@ function showLoadingAndNavigateToPage(targetPage) {
     }, 5000);
 }
 
-function changeSortOrder(order) {
+async function changeSortOrder(order) {
     // 이전에는 popular일 때 return 했으나, 이제 구현하므로 제거
     
     sortOrder = order;
@@ -598,7 +598,7 @@ function changeSortOrder(order) {
     document.getElementById('sort_views').checked = (order === 'views');
     
     currentPage = 1;
-    loadPosts();
+    await loadPosts();
 }
 
 
@@ -629,18 +629,25 @@ function open_write() {
     showLoadingAndNavigateToPage('consume-write.html');
 }
 
-function getPosts() {
-    return JSON.parse(localStorage.getItem('consumePosts')) || [];
+// IndexedDB에서 게시글 가져오기
+async function getPosts() {
+    try {
+        const posts = await appDB.getAll('consume_posts');
+        return posts;
+    } catch (error) {
+        console.error('Failed to get posts from IndexedDB:', error);
+        return [];
+    }
 }
 
-function search_on() {
+async function search_on() {
     searchKeyword = document.getElementById('search_function').value.trim().toLowerCase();
     currentPage = 1;
     localStorage.setItem('consumeSearchKeyword', searchKeyword); // 검색어 저장
-    loadPosts();
+    await loadPosts();
 }
 
-function filterPosts(posts) {
+async function filterPosts(posts) {
     // 나의 게시글 모드일 때
     if (isMyPostsMode && currentUser) {
         posts = posts.filter(post => post.authorId === currentUser.id);
@@ -694,40 +701,40 @@ function sortPosts(posts) {
     return posts;
 }
 
-function tag_on() {
+async function tag_on() {
     tagSearchKeyword = document.getElementById('tagsearch_function').value.trim().toLowerCase();
     currentTagPage = 1;
-    loadTags();
+    await loadTags();
 }
 
-function selectTag(tag) {
+async function selectTag(tag) {
     if (selectedTag === tag) {
         selectedTag = null;
     } else {
         selectedTag = tag;
     }
     currentPage = 1;
-    loadTags();
-    loadPosts();
+    await loadTags();
+    await loadPosts();
 }
 
-function getTagCounts() {
-    const posts = getPosts();
-    const tagCounts = {};
-    
-    posts.forEach(post => {
-        if (post.tags) {
-            post.tags.forEach(tag => {
-                tagCounts[tag] = (tagCounts[tag] || 0) + 1;
-            });
-        }
-    });
-    
-    return tagCounts;
+async function getTagCounts() {
+    // 태그를 consume_saved_hashtags 객체 저장소에서 가져오도록 변경
+    try {
+        const allTags = await appDB.getAll('consume_saved_hashtags');
+        const tagCounts = {};
+        allTags.forEach(t => {
+            tagCounts[t.tag] = t.count;
+        });
+        return tagCounts;
+    } catch (error) {
+        console.error('Failed to get tag counts from IndexedDB:', error);
+        return {};
+    }
 }
 
-function loadTags() {
-    const tagCounts = getTagCounts();
+async function loadTags() {
+    const tagCounts = await getTagCounts(); // async로 변경
     let allTags = Object.keys(tagCounts);
     const tagitem = document.getElementById('tagitem');
     const tagpage = document.getElementById('tagpage');
@@ -800,8 +807,8 @@ function rendertagpage(totalPages) {
     tagpage.innerHTML = listpageHTML;
 }
 
-function changeTagPage(page) {
-    const tagCounts = getTagCounts();
+async function changeTagPage(page) {
+    const tagCounts = await getTagCounts(); // async로 변경
     let allTags = Object.keys(tagCounts);
     
     if (tagSearchKeyword) {
@@ -812,11 +819,11 @@ function changeTagPage(page) {
     if (page < 1 || page > totalPages) return;
     
     currentTagPage = page;
-    loadTags();
+    await loadTags();
 }
 
-function loadPosts() {
-    let posts = getPosts();
+async function loadPosts() {
+    let posts = await getPosts(); // IndexedDB에서 게시글 가져오기
     const listitem = document.getElementById('listitem');
     const listpageDiv = document.getElementById('listpage');
     
@@ -826,7 +833,7 @@ function loadPosts() {
         return;
     }
     
-    posts = filterPosts(posts);
+    posts = await filterPosts(posts); // async로 변경
     posts = sortPosts(posts);
     
     if (posts.length === 0) {
@@ -900,13 +907,16 @@ function renderlistpage(totalPages) {
     listpageDiv.innerHTML = listpageHTML;
 }
 
-function changePage(page) {
-    const posts = sortPosts(filterPosts(getPosts()));
-    const totalPages = Math.ceil(posts.length / postsPerPage);
+async function changePage(page) {
+    const posts = await getPosts(); // IndexedDB에서 게시글 가져오기
+    const filteredPosts = await filterPosts(posts); // async로 변경
+    const sortedPosts = sortPosts(filteredPosts);
+
+    const totalPages = Math.ceil(sortedPosts.length / postsPerPage);
     if (page < 1 || page > totalPages) return;
     
     currentPage = page;
-    loadPosts();
+    await loadPosts(); // async로 변경
     
     document.getElementById('listitem').scrollTop = 0;
 }
@@ -916,8 +926,25 @@ function viewPost(postId, linkPage = 'consume-read.html') {
     showLoadingAndNavigateToPage(targetUrl);
 }
 
-window.addEventListener('DOMContentLoaded', function() {
+window.addEventListener('DOMContentLoaded', async function() { // async로 변경
     checkLoginStatus(); // 로그인 상태 확인
+    
+    // localStorage -> IndexedDB 마이그레이션 (한 번만 실행)
+    await appDB.migrateFromLocalStorage('consumePosts', 'consume_posts'); 
+    // consumeSavedHashtags도 마이그레이션
+    // localStorage의 consumeSavedHashtags는 ['태그1', '태그2'] 형태이므로, IndexedDB에는 { tag: '태그1' } 형태로 저장해야 함
+    const savedHashtagsFromLS = JSON.parse(localStorage.getItem('consumeSavedHashtags')) || [];
+    if (savedHashtagsFromLS.length > 0) {
+        for (const hashtag of savedHashtagsFromLS) {
+            try {
+                await appDB.put('consume_saved_hashtags', { id: hashtag, tag: hashtag, count: 1 }); // 'id'를 태그 자체로 사용하거나 다른 고유값 생성
+            } catch (error) {
+                console.warn(`Failed to migrate hashtag ${hashtag}:`, error);
+            }
+        }
+        localStorage.removeItem('consumeSavedHashtags');
+        console.log('Hashtags migrated and consumeSavedHashtags removed from localStorage.');
+    }
     
     const loginModal = document.getElementById('loginModal');
     loginModal.addEventListener('click', function(e) {
@@ -968,18 +995,18 @@ window.addEventListener('DOMContentLoaded', function() {
         // 검색어는 DOMContentLoaded 후 loadPosts에서 반영될 것이므로 여기서 지울 필요 없음
     }
 
-    isMyPostsMode = localStorage.getItem('consumeIsMyPostsMode') === 'true';
-    isMyLikesMode = localStorage.getItem('consumeIsMyLikesMode') === 'true';
+    isMyPostsMode = sessionStorage.getItem('consumeIsMyPostsMode') === 'true'; // sessionStorage에서 불러오도록 변경
+    isMyLikesMode = sessionStorage.getItem('consumeIsMyLikesMode') === 'true'; // sessionStorage에서 불러오도록 변경
     
     // 최상위 창일 경우에만 localStorage 상태를 클리어하여, iframe 로드 시 중복 적용 방지
     // (그러나 이 스크립트가 iframe 내에서도 로드된다면, 그 동작은 달라질 수 있음)
     if (window.top === window.self) {
         localStorage.removeItem('consumeSearchKeyword');
-        localStorage.removeItem('consumeIsMyPostsMode');
-        localStorage.removeItem('consumeIsMyLikesMode');
+        sessionStorage.removeItem('consumeIsMyPostsMode');
+        sessionStorage.removeItem('consumeIsMyLikesMode');
     }
     
-    loadTags();
-    loadPosts();
+    await loadTags(); // async로 변경
+    await loadPosts(); // async로 변경
     updateNotificationCount(); // 알림 개수 초기화
 });

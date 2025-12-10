@@ -280,7 +280,7 @@ body {
 
 .filter .tag_item {
     grid-area: filter_tagitem;
-    overflow: auto;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -290,7 +290,7 @@ body {
 }
 
 .filter .tag-item {
-    padding: 8px 12px;
+    padding: 7.5px 12px;
     border: 2px solid rgb(0, 0, 200);
     box-shadow: 0px 0px 10px rgba(0, 0, 200, 0.2);
     color: black;
