@@ -832,6 +832,10 @@ async function loadPosts() {
         listpageDiv.innerHTML = '';
         return;
     }
+
+    // sessionStorage에서 나의 게시글/좋아요 모드 상태 불러오기
+    isMyPostsMode = sessionStorage.getItem('consumeIsMyPostsMode') === 'true';
+    isMyLikesMode = sessionStorage.getItem('consumeIsMyLikesMode') === 'true';
     
     posts = await filterPosts(posts); // async로 변경
     posts = sortPosts(posts);
@@ -994,9 +998,6 @@ window.addEventListener('DOMContentLoaded', async function() { // async로 변�
         document.getElementById('search_function').value = searchKeyword; // 검색창에 값 설정
         // 검색어는 DOMContentLoaded 후 loadPosts에서 반영될 것이므로 여기서 지울 필요 없음
     }
-
-    isMyPostsMode = sessionStorage.getItem('consumeIsMyPostsMode') === 'true'; // sessionStorage에서 불러오도록 변경
-    isMyLikesMode = sessionStorage.getItem('consumeIsMyLikesMode') === 'true'; // sessionStorage에서 불러오도록 변경
     
     // 최상위 창일 경우에만 localStorage 상태를 클리어하여, iframe 로드 시 중복 적용 방지
     // (그러나 이 스크립트가 iframe 내에서도 로드된다면, 그 동작은 달라질 수 있음)
