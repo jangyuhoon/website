@@ -21,13 +21,13 @@ body {
 .grid {
     display: grid;
     width: 100%;
-    height: calc(100vh - 20px);
+    height: 97vh;
     grid-template-columns: 1fr 5fr 0.7fr;
     grid-template-rows: 1fr minmax(auto, 10fr) 1fr;
     grid-template-areas: 
     'login search category'
     'info info info'
-    'recent . save';
+    'recent delete save';
     gap: 10px;
 }
 
@@ -316,6 +316,22 @@ body {
 
 .save:hover {
     font-size: 1.2rem;
+}
+
+.delete {
+    grid-area: delete;
+    text-align: right;
+    align-content: center;
+}
+
+.delete > ion-icon {
+    font-size: 2.3em;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.delete > ion-icon:hover {
+    color: red;
 }
 
 .post-card {

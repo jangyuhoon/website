@@ -27,7 +27,7 @@ body {
     grid-template-areas: 
     'login search category'
     'info info info'
-    'recent . save';
+    'recent delete save';
     gap: 10px;
 }
 
@@ -329,6 +329,22 @@ body {
 
 .save:hover {
     font-size: 1.2rem;
+}
+
+.delete {
+    grid-area: delete;
+    text-align: right;
+    align-content: center;
+}
+
+.delete > ion-icon {
+    font-size: 2.3em;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.delete > ion-icon:hover {
+    color: red;
 }
 
 .post-card {
