@@ -726,12 +726,12 @@ async function selectTag(tag) {
 }
 
 async function getTagCounts() {
-    // 태그를 reform_saved_hashtags 객체 저장소에서 가져오도록 변경
     try {
         const allTags = await appDB.getAll('reform_saved_hashtags');
         const tagCounts = {};
         allTags.forEach(t => {
-            tagCounts[t.tag] = t.count;
+            // count가 없으면 1로 기본값 설정
+            tagCounts[t.tag] = t.count || 1;
         });
         return tagCounts;
     } catch (error) {

@@ -465,7 +465,6 @@ function readImageAsBase64(file) {
     });
 }
 
-// 기존 savePost 함수를 updatePost 함수로 변경
 async function updatePost() {
     if (!currentUser) {
         alert('로그인이 필요한 서비스입니다.');
@@ -493,8 +492,7 @@ async function updatePost() {
     }
 
     try {
-        const existingPost = await getPostById(parseInt(currentPostId));
-
+        const existingPost = await appDB.get('plan_posts', parseInt(currentPostId));
         if (!existingPost) {
             alert('해당 게시글을 찾을 수 없습니다.');
             return;
@@ -504,23 +502,50 @@ async function updatePost() {
         let imageName = existingPost.imageName;
 
         if (imageFile) {
-            imageData = await readImageAsBase64(imageFile);
-            imageName = imageFile.name;
+            try {
+                imageData = await readImageAsBase64(imageFile);
+                imageName = imageFile.name;
+            } catch (error) {
+                console.error('이미지 읽기 실패:', error);
+                alert('이미지 파일 읽기에 실패했습니다.');
+                return;
+            }
         }
 
-        // 해시태그를 IndexedDB에 업데이트
+        // 기존 태그들의 count 감소
+        const oldTags = existingPost.tags || [];
+        for (const oldTag of oldTags) {
+            try {
+                const existingTag = await appDB.get('plan_saved_hashtags', oldTag);
+                if (existingTag) {
+                    existingTag.count = Math.max((existingTag.count || 1) - 1, 0);
+                    if (existingTag.count === 0) {
+                        // count가 0이 되면 태그 삭제
+                        await appDB.delete('plan_saved_hashtags', oldTag);
+                    } else {
+                        await appDB.put('plan_saved_hashtags', existingTag);
+                    }
+                }
+            } catch (error) {
+                console.warn(`Failed to decrease count for hashtag ${oldTag}:`, error);
+            }
+        }
+
+        // 새 태그들의 count 증가
         for (const newTag of tags) {
             try {
                 const existingTag = await appDB.get('plan_saved_hashtags', newTag);
-                if (!existingTag) {
-                    await appDB.add('plan_saved_hashtags', { tag: newTag });
+                if (existingTag) {
+                    existingTag.count = (existingTag.count || 0) + 1;
+                    await appDB.put('plan_saved_hashtags', existingTag);
+                } else {
+                    await appDB.add('plan_saved_hashtags', { tag: newTag, count: 1 });
                 }
             } catch (error) {
                 console.warn(`Failed to save hashtag ${newTag}:`, error);
             }
         }
 
-        // 게시글 데이터 업데이트
         const updatedPostData = {
             ...existingPost,
             title: title,
@@ -536,15 +561,14 @@ async function updatePost() {
 
         console.log('게시글 업데이트 완료:', updatedPostData);
         alert('게시글이 성공적으로 수정되었습니다!');
+        
         showLoadingAndNavigateToPage('plan-read.html#' + currentPostId);
-
     } catch (error) {
         console.error('게시글 업데이트 실패:', error);
         alert('게시글 업데이트에 실패했습니다. 콘솔을 확인해주세요.');
     }
 }
 
-// 게시글 삭제 함수
 async function deletePost() {
     if (!currentUser) {
         alert('로그인이 필요한 서비스입니다.');
@@ -556,15 +580,46 @@ async function deletePost() {
         return;
     }
 
-    if (confirm('정말 이 게시글을 삭제하시겠습니까?')) {
-        try {
-            await appDB.delete('plan_posts', parseInt(currentPostId));
-            alert('게시글이 성공적으로 삭제되었습니다!');
-            showLoadingAndNavigateToPage('plan.html'); // 목록 페이지로 이동
-        } catch (error) {
-            console.error('게시글 삭제 실패:', error);
-            alert('게시글 삭제에 실패했습니다. 콘솔을 확인해주세요.');
+    if (!confirm('정말 이 게시글을 삭제하시겠습니까?')) {
+        return;
+    }
+
+    try {
+        const existingPost = await appDB.get('plan_posts', parseInt(currentPostId));
+        if (!existingPost) {
+            alert('해당 게시글을 찾을 수 없습니다.');
+            return;
         }
+
+        // 게시글의 태그들 count 감소
+        const tags = existingPost.tags || [];
+        for (const tag of tags) {
+            try {
+                const existingTag = await appDB.get('plan_saved_hashtags', tag);
+                if (existingTag) {
+                    existingTag.count = Math.max((existingTag.count || 1) - 1, 0);
+                    if (existingTag.count === 0) {
+                        // count가 0이 되면 태그 삭제
+                        await appDB.delete('plan_saved_hashtags', tag);
+                    } else {
+                        await appDB.put('plan_saved_hashtags', existingTag);
+                    }
+                }
+            } catch (error) {
+                console.warn(`Failed to decrease count for hashtag ${tag}:`, error);
+            }
+        }
+
+        // 게시글 삭제
+        await appDB.delete('plan_posts', parseInt(currentPostId));
+
+        console.log('게시글 삭제 완료:', currentPostId);
+        alert('게시글이 성공적으로 삭제되었습니다!');
+        
+        showLoadingAndNavigateToPage('plan.html');
+    } catch (error) {
+        console.error('게시글 삭제 실패:', error);
+        alert('게시글 삭제에 실패했습니다. 콘솔을 확인해주세요.');
     }
 }
 

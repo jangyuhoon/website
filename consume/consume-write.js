@@ -510,12 +510,18 @@ async function savePost() {
             return;
         }
     }
+    
     // Update hashtags in IndexedDB
     for (const newTag of tags) {
         try {
             const existingTag = await appDB.get('consume_saved_hashtags', newTag);
-            if (!existingTag) {
-                await appDB.add('consume_saved_hashtags', { tag: newTag });
+            if (existingTag) {
+                // 기존 태그: count 증가
+                existingTag.count = (existingTag.count || 0) + 1;
+                await appDB.put('consume_saved_hashtags', existingTag);
+            } else {
+                // 새 태그: count 1로 시작
+                await appDB.add('consume_saved_hashtags', { tag: newTag, count: 1 });
             }
         } catch (error) {
             console.warn(`Failed to save hashtag ${newTag}:`, error);

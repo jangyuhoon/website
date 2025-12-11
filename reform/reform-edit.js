@@ -485,12 +485,33 @@ async function updatePost() {
             }
         }
 
-        // 해시태그를 IndexedDB에 업데이트
+        // 기존 태그들의 count 감소
+        const oldTags = existingPost.tags || [];
+        for (const oldTag of oldTags) {
+            try {
+                const existingTag = await appDB.get('reform_saved_hashtags', oldTag);
+                if (existingTag) {
+                    existingTag.count = Math.max((existingTag.count || 1) - 1, 0);
+                    if (existingTag.count === 0) {
+                        await appDB.delete('reform_saved_hashtags', oldTag);
+                    } else {
+                        await appDB.put('reform_saved_hashtags', existingTag);
+                    }
+                }
+            } catch (error) {
+                console.warn(`Failed to decrease count for hashtag ${oldTag}:`, error);
+            }
+        }
+
+        // 새 태그들의 count 증가
         for (const newTag of tags) {
             try {
                 const existingTag = await appDB.get('reform_saved_hashtags', newTag);
-                if (!existingTag) {
-                    await appDB.add('reform_saved_hashtags', { tag: newTag });
+                if (existingTag) {
+                    existingTag.count = (existingTag.count || 0) + 1;
+                    await appDB.put('reform_saved_hashtags', existingTag);
+                } else {
+                    await appDB.add('reform_saved_hashtags', { tag: newTag, count: 1 });
                 }
             } catch (error) {
                 console.warn(`Failed to save hashtag ${newTag}:`, error);
@@ -518,6 +539,58 @@ async function updatePost() {
     } catch (error) {
         console.error('게시글 업데이트 실패:', error);
         alert('게시글 업데이트에 실패했습니다. 콘솔을 확인해주세요.');
+    }
+}
+
+async function deletePost() {
+    if (!currentUser) {
+        alert('로그인이 필요한 서비스입니다.');
+        openLoginModal();
+        return;
+    }
+    if (!currentPostId) {
+        alert('삭제할 게시글 ID를 찾을 수 없습니다.');
+        return;
+    }
+
+    if (!confirm('정말 이 게시글을 삭제하시겠습니까?')) {
+        return;
+    }
+
+    try {
+        const existingPost = await appDB.get('reform_posts', parseInt(currentPostId));
+        if (!existingPost) {
+            alert('해당 게시글을 찾을 수 없습니다.');
+            return;
+        }
+
+        // 게시글의 태그들 count 감소
+        const tags = existingPost.tags || [];
+        for (const tag of tags) {
+            try {
+                const existingTag = await appDB.get('reform_saved_hashtags', tag);
+                if (existingTag) {
+                    existingTag.count = Math.max((existingTag.count || 1) - 1, 0);
+                    if (existingTag.count === 0) {
+                        await appDB.delete('reform_saved_hashtags', tag);
+                    } else {
+                        await appDB.put('reform_saved_hashtags', existingTag);
+                    }
+                }
+            } catch (error) {
+                console.warn(`Failed to decrease count for hashtag ${tag}:`, error);
+            }
+        }
+
+        await appDB.delete('reform_posts', parseInt(currentPostId));
+
+        console.log('게시글 삭제 완료:', currentPostId);
+        alert('게시글이 성공적으로 삭제되었습니다!');
+        
+        showLoadingAndNavigateToPage('reform.html');
+    } catch (error) {
+        console.error('게시글 삭제 실패:', error);
+        alert('게시글 삭제에 실패했습니다. 콘솔을 확인해주세요.');
     }
 }
 

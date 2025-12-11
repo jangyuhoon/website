@@ -719,12 +719,12 @@ async function selectTag(tag) {
 }
 
 async function getTagCounts() {
-    // 태그를 consume_saved_hashtags 객체 저장소에서 가져오도록 변경
     try {
         const allTags = await appDB.getAll('consume_saved_hashtags');
         const tagCounts = {};
         allTags.forEach(t => {
-            tagCounts[t.tag] = t.count;
+            // count가 없으면 1로 기본값 설정
+            tagCounts[t.tag] = t.count || 1;
         });
         return tagCounts;
     } catch (error) {
@@ -872,6 +872,9 @@ async function loadPosts() {
                 <div class="post-subtitle">${post.subtitle || ''}원</div>
                 <div class="post-tags">
                     ${post.tags.map(tag => `<span class="post-tag">#${tag}</span>`).join('')}
+                </div>
+                <div class="post-meta">
+                    ${post.author ? `작성자: ${post.author} | ` : ''}${new Date(post.createdAt).toLocaleString('ko-KR')} | 조회 ${post.views} | 좋아요 ${post.likes}
                 </div>
             </div>
             ${post.image ? `<img src="${post.image}" alt="${post.title}" class="post-image">` : ''}

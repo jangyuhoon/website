@@ -472,8 +472,13 @@ async function savePost() {
     for (const newTag of tags) {
         try {
             const existingTag = await appDB.get('reform_saved_hashtags', newTag);
-            if (!existingTag) {
-                await appDB.add('reform_saved_hashtags', { tag: newTag });
+            if (existingTag) {
+                // 기존 태그: count 증가
+                existingTag.count = (existingTag.count || 0) + 1;
+                await appDB.put('reform_saved_hashtags', existingTag);
+            } else {
+                // 새 태그: count 1로 시작
+                await appDB.add('reform_saved_hashtags', { tag: newTag, count: 1 });
             }
         } catch (error) {
             console.warn(`Failed to save hashtag ${newTag}:`, error);

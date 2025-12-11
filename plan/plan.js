@@ -725,17 +725,8 @@ async function getTagCounts() {
         });
         return tagCounts;
     } catch (error) {
-        console.error('Failed to get tag counts from IndexedDB, falling back to post scan:', error);
-        const posts = await getPosts();
-        const tagCounts = {};
-        posts.forEach(post => {
-            if (post.tags) {
-                post.tags.forEach(tag => {
-                    tagCounts[tag] = (tagCounts[tag] || 0) + 1;
-                });
-            }
-        });
-        return tagCounts;
+        console.error('Failed to get tag counts from IndexedDB:', error);
+        return {};
     }
 }
 
